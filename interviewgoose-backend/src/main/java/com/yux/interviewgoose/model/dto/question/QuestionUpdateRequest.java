@@ -1,4 +1,4 @@
-package ${packageName}.model.dto.${dataKey};
+package com.yux.interviewgoose.model.dto.question;
 
 import lombok.Data;
 
@@ -6,13 +6,13 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Edit ${dataName} Request
+ * update Question request
  *
  * @author Hu
  *
  */
 @Data
-public class ${upperDataKey}EditRequest implements Serializable {
+public class QuestionUpdateRequest implements Serializable {
 
     /**
      * id
@@ -20,19 +20,24 @@ public class ${upperDataKey}EditRequest implements Serializable {
     private Long id;
 
     /**
-     * Title
+     * title
      */
     private String title;
 
     /**
-     * Content
+     * content
      */
     private String content;
 
     /**
-     * Tags
+     * tags
      */
     private List<String> tags;
+
+    /**
+     * recommended answer
+     */
+    private String answer;
 
     private static final long serialVersionUID = 1L;
 }

@@ -10,10 +10,10 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * ${dataName}视图
+ * ${dataName} VO
  *
  * @author Hu
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
+ *
  */
 @Data
 public class ${upperDataKey}VO implements Serializable {
@@ -24,42 +24,42 @@ public class ${upperDataKey}VO implements Serializable {
     private Long id;
 
     /**
-     * 标题
+     * title
      */
     private String title;
 
     /**
-     * 内容
+     * content
      */
     private String content;
 
     /**
-     * 创建用户 id
+     * user id
      */
     private Long userId;
 
     /**
-     * 创建时间
+     * create time
      */
     private Date createTime;
 
     /**
-     * 更新时间
+     * update time
      */
     private Date updateTime;
 
     /**
-     * 标签列表
+     * tags list
      */
     private List<String> tagList;
 
     /**
-     * 创建用户信息
+     * details of user who created
      */
     private UserVO user;
 
     /**
-     * 封装类转对象
+     * Class to Object
      *
      * @param ${dataKey}VO
      * @return
@@ -76,7 +76,7 @@ public class ${upperDataKey}VO implements Serializable {
     }
 
     /**
-     * 对象转封装类
+     * Object to Class
      *
      * @param ${dataKey}
      * @return

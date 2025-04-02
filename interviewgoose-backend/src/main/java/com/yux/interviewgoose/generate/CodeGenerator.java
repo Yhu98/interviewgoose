@@ -16,7 +16,6 @@ import java.io.Writer;
  * 代码生成器
  *
  * @author Hu
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
  */
 public class CodeGenerator {
 
@@ -30,9 +29,9 @@ public class CodeGenerator {
     public static void main(String[] args) throws TemplateException, IOException {
         // 指定生成参数
         String packageName = "com.yux.interviewgoose";
-        String dataName = "用户评论";
-        String dataKey = "userComment";
-        String upperDataKey = "UserComment";
+        String dataName = "Question Bank Question";
+        String dataKey = "questionBankQuestion";
+        String upperDataKey = "QuestionBankQuestion";
 
         // 封装生成参数
         Map<String, Object> dataModel = new HashMap<>();

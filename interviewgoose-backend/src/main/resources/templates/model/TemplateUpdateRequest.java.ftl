@@ -6,10 +6,10 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 更新${dataName}请求
+ * update ${dataName} request
  *
  * @author Hu
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
+ *
  */
 @Data
 public class ${upperDataKey}UpdateRequest implements Serializable {
@@ -20,17 +20,17 @@ public class ${upperDataKey}UpdateRequest implements Serializable {
     private Long id;
 
     /**
-     * 标题
+     * title
      */
     private String title;
 
     /**
-     * 内容
+     * content
      */
     private String content;
 
     /**
-     * 标签列表
+     * tags
      */
     private List<String> tags;
 

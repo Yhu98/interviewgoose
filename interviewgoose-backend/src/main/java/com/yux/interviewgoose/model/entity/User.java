@@ -10,7 +10,7 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * 用户
+ * User
  *
  * @author Hu
  */
@@ -25,57 +25,62 @@ public class User implements Serializable {
     private Long id;
 
     /**
-     * 用户账号
+     * account name
      */
     private String userAccount;
 
     /**
-     * 用户密码
+     * account password
      */
     private String userPassword;
 
     /**
-     * 开放平台id
+     * wechat account open id
      */
     private String unionId;
 
     /**
-     * 公众号openId
+     * wechat official account openId
      */
     private String mpOpenId;
 
     /**
-     * 用户昵称
+     * alias
      */
     private String userName;
 
     /**
-     * 用户头像
+     * avatar
      */
     private String userAvatar;
 
     /**
-     * 用户简介
+     * profile
      */
     private String userProfile;
 
     /**
-     * 用户角色：user/admin/ban
+     * role of the account：user/admin/ban
      */
     private String userRole;
 
     /**
-     * 创建时间
+     * edit time
+     */
+    private Date editTime;
+
+    /**
+     * creation time
      */
     private Date createTime;
 
     /**
-     * 更新时间
+     * update time
      */
     private Date updateTime;
 
     /**
-     * 是否删除
+     * is deleted or not
      */
     @TableLogic
     private Integer isDelete;

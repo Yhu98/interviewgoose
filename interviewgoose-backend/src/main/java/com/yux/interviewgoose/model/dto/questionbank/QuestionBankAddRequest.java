@@ -1,4 +1,4 @@
-package ${packageName}.model.dto.${dataKey};
+package com.yux.interviewgoose.model.dto.questionbank;
 
 import lombok.Data;
 
@@ -6,28 +6,29 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * create ${dataName} request
+ * create Question Bank request
  *
  * @author Hu
  *
  */
 @Data
-public class ${upperDataKey}AddRequest implements Serializable {
+public class QuestionBankAddRequest implements Serializable {
 
     /**
      * title
      */
     private String title;
 
-    /**
-     * content
-     */
-    private String content;
 
     /**
-     * tags
+     * description
      */
-    private List<String> tags;
+    private String description;
+
+    /**
+     * picture
+     */
+    private String picture;
 
     private static final long serialVersionUID = 1L;
 }

@@ -1,6 +1,6 @@
-package ${packageName}.model.dto.${dataKey};
+package com.yux.interviewgoose.model.dto.questionbank;
 
-import ${packageName}.common.PageRequest;
+import com.yux.interviewgoose.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -8,14 +8,14 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * get ${dataName} request
+ * get Question Bank request
  *
  * @author Hu
  *
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ${upperDataKey}QueryRequest extends PageRequest implements Serializable {
+public class QuestionBankQueryRequest extends PageRequest implements Serializable {
 
     /**
      * id
@@ -38,19 +38,24 @@ public class ${upperDataKey}QueryRequest extends PageRequest implements Serializ
     private String title;
 
     /**
-     * content
+     * description
      */
-    private String content;
+    private String description;
 
     /**
-     * tags
+     * picture
      */
-    private List<String> tags;
+    private String picture;
 
     /**
      * user id
      */
     private Long userId;
+
+    /**
+     * whether query question list is required for the scenario
+     */
+    private boolean needQueryQuestionList;
 
     private static final long serialVersionUID = 1L;
 }

@@ -10,18 +10,18 @@ import ${packageName}.model.vo.${upperDataKey}VO;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * ${dataName}服务
+ * ${dataName} service
  *
  * @author Hu
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
+ *
  */
 public interface ${upperDataKey}Service extends IService<${upperDataKey}> {
 
     /**
-     * 校验数据
+     * Validate data
      *
      * @param ${dataKey}
-     * @param add 对创建的数据进行校验
+     * @param add (validate the data created)
      */
     void valid${upperDataKey}(${upperDataKey} ${dataKey}, boolean add);
 
@@ -34,7 +34,7 @@ public interface ${upperDataKey}Service extends IService<${upperDataKey}> {
     QueryWrapper<${upperDataKey}> getQueryWrapper(${upperDataKey}QueryRequest ${dataKey}QueryRequest);
     
     /**
-     * 获取${dataName}封装
+     * obtain ${dataName} Wrapper
      *
      * @param ${dataKey}
      * @param request
@@ -43,7 +43,7 @@ public interface ${upperDataKey}Service extends IService<${upperDataKey}> {
     ${upperDataKey}VO get${upperDataKey}VO(${upperDataKey} ${dataKey}, HttpServletRequest request);
 
     /**
-     * 分页获取${dataName}封装
+     * obtain ${dataName} pages Wrapper
      *
      * @param ${dataKey}Page
      * @param request

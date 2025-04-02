@@ -26,10 +26,10 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * ${dataName}接口
+ * ${dataName} interface
  *
  * @author Hu
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
+ *
  */
 @RestController
 @RequestMapping("/${dataKey}")
@@ -42,10 +42,10 @@ public class ${upperDataKey}Controller {
     @Resource
     private UserService userService;
 
-    // region 增删改查
+    // region CRUD
 
     /**
-     * 创建${dataName}
+     * create ${dataName}
      *
      * @param ${dataKey}AddRequest
      * @param request
@@ -71,7 +71,7 @@ public class ${upperDataKey}Controller {
     }
 
     /**
-     * 删除${dataName}
+     * delete ${dataName}
      *
      * @param deleteRequest
      * @param request
@@ -98,7 +98,7 @@ public class ${upperDataKey}Controller {
     }
 
     /**
-     * 更新${dataName}（仅管理员可用）
+     * update ${dataName} (admin only)
      *
      * @param ${dataKey}UpdateRequest
      * @return
@@ -125,7 +125,7 @@ public class ${upperDataKey}Controller {
     }
 
     /**
-     * 根据 id 获取${dataName}（封装类）
+     * get ${dataName} (Class) by id
      *
      * @param id
      * @return
@@ -141,7 +141,7 @@ public class ${upperDataKey}Controller {
     }
 
     /**
-     * 分页获取${dataName}列表（仅管理员可用）
+     * get ${dataName} list in pages (admin only)
      *
      * @param ${dataKey}QueryRequest
      * @return
@@ -158,7 +158,7 @@ public class ${upperDataKey}Controller {
     }
 
     /**
-     * 分页获取${dataName}列表（封装类）
+     * get ${dataName} list in pages (Class)
      *
      * @param ${dataKey}QueryRequest
      * @param request
@@ -179,7 +179,7 @@ public class ${upperDataKey}Controller {
     }
 
     /**
-     * 分页获取当前登录用户创建的${dataName}列表
+     * get the list of ${dataName} created by current logged-in user in pages
      *
      * @param ${dataKey}QueryRequest
      * @param request
@@ -194,7 +194,7 @@ public class ${upperDataKey}Controller {
         ${dataKey}QueryRequest.setUserId(loginUser.getId());
         long current = ${dataKey}QueryRequest.getCurrent();
         long size = ${dataKey}QueryRequest.getPageSize();
-        // 限制爬虫
+        // Anti Spider
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         // 查询数据库
         Page<${upperDataKey}> ${dataKey}Page = ${dataKey}Service.page(new Page<>(current, size),
@@ -204,7 +204,7 @@ public class ${upperDataKey}Controller {
     }
 
     /**
-     * 编辑${dataName}（给用户使用）
+     * edit ${dataName} (for user)
      *
      * @param ${dataKey}EditRequest
      * @param request

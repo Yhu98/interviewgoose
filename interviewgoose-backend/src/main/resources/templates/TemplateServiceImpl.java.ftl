@@ -32,10 +32,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * ${dataName}服务实现
+ * ${dataName} service implementation
  *
  * @author Hu
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
+ *
  */
 @Service
 @Slf4j
@@ -45,10 +45,10 @@ public class ${upperDataKey}ServiceImpl extends ServiceImpl<${upperDataKey}Mappe
     private UserService userService;
 
     /**
-     * 校验数据
+     * data validation
      *
      * @param ${dataKey}
-     * @param add      对创建的数据进行校验
+     * @param add      validate the data created``````````````
      */
     @Override
     public void valid${upperDataKey}(${upperDataKey} ${dataKey}, boolean add) {
@@ -116,7 +116,7 @@ public class ${upperDataKey}ServiceImpl extends ServiceImpl<${upperDataKey}Mappe
     }
 
     /**
-     * 获取${dataName}封装
+     * obtain ${dataName} VO
      *
      * @param ${dataKey}
      * @param request
