@@ -3,8 +3,10 @@ import React, { useCallback, useEffect } from "react";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import BasicLayout from "@/layouts/BasicLayout";
 import "./globals.css";
-import store from "@/stores";
-import { Provider } from "react-redux";
+import store, { AppDispatch } from "@/stores";
+import { Provider, useDispatch } from "react-redux";
+import { getLoginUserUsingGet } from "@/api/userController";
+import { setLoginUser } from "@/stores/loginUser";
 
 /**
  * Global Init Logic
@@ -17,16 +19,25 @@ const InitLayout: React.FC<
     children: React.ReactNode;
   }>
 > = ({ children }) => {
+  const dispatch = useDispatch<AppDispatch>();
   /**
    * Global initial function
    * logic only used for once
    */
-  const doInit = useCallback(() => {
-    console.log("init");
+  const doInitLoginUser = useCallback(async () => {
+    const res = await getLoginUserUsingGet();
+    if (res.data) {
+      // update global user state
+    } else {
+      setTimeout(() => {
+        const testUser = { userName: "test login", id: 1 };
+        dispatch(setLoginUser(testUser));
+      }, 3000);
+    }
   }, []);
   // execute only for once
   useEffect(() => {
-    doInit();
+    doInitLoginUser();
   }, []);
   return children;
 };

@@ -14,8 +14,12 @@ import Link from "next/link";
 import GlobalFooter from "@/components/GlobalFooter";
 import "./index.css";
 import menus from "../../../config/menu";
+import { useSelector } from "react-redux";
+import { RootState } from "@/stores";
+
 /**
- *
+ * Global Basic Layout
+ * @param children
  * @constructor
  */
 const SearchInput = () => {
@@ -59,6 +63,8 @@ interface Props {
 
 export default function BasicLayout({ children }: Props) {
   const pathname = usePathname();
+  const loginUser = useSelector((state: RootState) => state.loginUser);
+
   return (
     <div
       id="basic-layout"
@@ -82,9 +88,9 @@ export default function BasicLayout({ children }: Props) {
           pathname,
         }}
         avatarProps={{
-          src: "https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg",
+          src: loginUser.userAvatar || "/assets/notLoginUser.png",
           size: "small",
-          title: "Yuxuan",
+          title: loginUser.userName || "FreshGoose",
           render: (props, dom) => {
             return (
               <Dropdown
@@ -93,7 +99,7 @@ export default function BasicLayout({ children }: Props) {
                     {
                       key: "logout",
                       icon: <LogoutOutlined />,
-                      label: "退出登录",
+                      label: "Sign out",
                     },
                   ],
                 }}
@@ -104,7 +110,6 @@ export default function BasicLayout({ children }: Props) {
           },
         }}
         actionsRender={(props) => {
-          //if (typeof window === "undefined") return [];
           if (props.isMobile) return [];
           return [
             <SearchInput key="search" />,
@@ -118,24 +123,17 @@ export default function BasicLayout({ children }: Props) {
           ];
         }}
         headerTitleRender={(logo, title, _) => {
-          const defaultDom = (
+          return (
             <a>
               {logo}
               {title}
             </a>
           );
-          if (typeof window === "undefined") return defaultDom;
-          if (document.body.clientWidth < 1400) {
-            return defaultDom;
-          }
-          if (_.isMobile) return defaultDom;
-          return <>{defaultDom}</>;
         }}
         // Render Footer
         footerRender={(props) => {
           return <GlobalFooter />;
         }}
-
         onMenuHeaderClick={(e) => console.log(e)}
         menuDataRender={() => {
           return menus;
