@@ -26,11 +26,11 @@ const verifyAccess = (
   }
   // need to be admin to access
   if (needAccess === ACCESS_ENUM.ADMIN) {
-    if (needAccess !== ACCESS_ENUM.ADMIN) {
+    if (loginUserAccess !== ACCESS_ENUM.ADMIN) {
       return false;
     }
-    return true;
   }
+  return true;
 };
 
 export default verifyAccess;
