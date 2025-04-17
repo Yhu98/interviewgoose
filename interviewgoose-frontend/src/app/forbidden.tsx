@@ -5,8 +5,8 @@ const Forbidden = () => {
     <Result
       status={403}
       title="403"
-      subTitle="Sorry, you don't the access to this page."
-      extra={<Button type="primary" href=""></Button>}
+      subTitle="Sorry, you don't access to this page."
+      extra={<Button type="primary" href="">Back Home</Button>}
     />
   );
 };
