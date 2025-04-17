@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import ACCESS_ENUM from "@/access/accessEnum";
 
 // Default User
 const DEFAULT_USER: API.LoginUserVO = {
     userName: "No user logged in",
     userProfile: "Nothing to say here ......",
     userAvatar: "/assets/notLoginUser.png",
-    userRole: "guest",
+    userRole: ACCESS_ENUM.NOT_LOGIN,
 };
 
 /**
