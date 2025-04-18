@@ -6,7 +6,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { ProLayout } from "@ant-design/pro-components";
-import { Dropdown, Input, theme } from "antd";
+import { Dropdown, Input, message, theme } from "antd";
 import React, { ReactNode } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -14,8 +14,16 @@ import Link from "next/link";
 import GlobalFooter from "@/components/GlobalFooter";
 import "./index.css";
 import menus from "../../../config/menu";
-import { useSelector } from "react-redux";
-import { RootState } from "@/stores";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/stores";
+import getAccessibleMenus from "@/access/menuAccess";
+// import MdEditor from "@/components/MdEditor";
+// import MdViewer from "@/components/MdViewer";
+import { userLogoutUsingPost } from "@/api/userController";
+import LoginUser, { setLoginUser } from "@/stores/loginUser";
+import { DEFAULT_USER } from "@/constant/user";
+import { ProForm } from "@ant-design/pro-form/lib";
+import { useRouter } from "next/navigation";
 
 /**
  * Global Basic Layout
@@ -64,6 +72,24 @@ interface Props {
 export default function BasicLayout({ children }: Props) {
   const pathname = usePathname();
   const loginUser = useSelector((state: RootState) => state.loginUser);
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+
+  /**
+   * User Signout
+   */
+  const userLogout = async () => {
+    try {
+      await userLogoutUsingPost();
+      message.success("You've signed out.");
+      // @ts-ignore
+      dispatch(setLoginUser(DEFAULT_USER));
+      router.push("/user/login");
+    } catch (e) {
+      // @ts-ignore
+      message.error("Couldn't sign out " + e.message);
+    }
+  };
 
   return (
     <div
@@ -79,9 +105,9 @@ export default function BasicLayout({ children }: Props) {
         logo={
           <Image
             src="/assets/logo.png"
+            alt="Interview Goose"
             height={32}
             width={32}
-            alt="Interview Goose - Yuxuan"
           />
         }
         location={{
@@ -92,6 +118,17 @@ export default function BasicLayout({ children }: Props) {
           size: "small",
           title: loginUser.userName || "FreshGoose",
           render: (props, dom) => {
+            if (!loginUser.id) {
+              return (
+                <div
+                  onClick={() => {
+                    router.push("/user/login");
+                  }}
+                >
+                  {dom}
+                </div>
+              );
+            }
             return (
               <Dropdown
                 menu={{
@@ -102,6 +139,12 @@ export default function BasicLayout({ children }: Props) {
                       label: "Sign out",
                     },
                   ],
+                  onClick: async (event: { key: React.Key }) => {
+                    const { key } = event;
+                    if (key === "logout") {
+                      userLogout();
+                    }
+                  },
                 }}
               >
                 {dom}
@@ -118,7 +161,7 @@ export default function BasicLayout({ children }: Props) {
               href="https://github.com/Yhu98/interviewgoose"
               target="_blank"
             >
-              <GithubFilled key="github" />
+              <GithubFilled key="GitHubFilled" />
             </a>,
           ];
         }}
@@ -136,7 +179,7 @@ export default function BasicLayout({ children }: Props) {
         }}
         onMenuHeaderClick={(e) => console.log(e)}
         menuDataRender={() => {
-          return menus;
+          return getAccessibleMenus(loginUser, menus);
         }}
         menuItemRender={(item, dom) => (
           <Link href={item.path || "/"} target={item.target}>
