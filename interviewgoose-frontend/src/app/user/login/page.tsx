@@ -98,7 +98,7 @@ const UserLoginPage: React.FC = () => {
           }}
         >
           Do not have an account?
-          <Link href={"/user/register"}>Register now!</Link>
+          <Link href={"/user/register"}> Register now!</Link>
         </div>
       </LoginForm>
     </div>
