@@ -22,7 +22,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3308/interview_goose
     username: root
-    password: 1814
+    password: root1814
   # Redis 配置
   # todo 需替换配置，然后取消注释
 #  redis:
