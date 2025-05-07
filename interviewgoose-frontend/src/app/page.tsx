@@ -1,81 +1,60 @@
-import Image from "next/image";
-import styles from "./page.module.css";
-import React from 'react';
-import { Button, Flex } from 'antd';
+"use server";
+import "./index.css";
+import Title from "antd/es/typography/Title";
+import { Flex, message } from "antd";
+import Link from "next/link";
+import { userLoginUsingPost } from "@/api/userController";
+import { setLoginUser } from "@/stores/loginUser";
+import { listQuestionBankVoByPageUsingPost } from "@/api/questionBankController";
+import { listQuestionVoByPageUsingPost } from "@/api/questionController";
 
-export default function Home() {
+/**
+ * Home Page
+ * @constructor
+ */
+export default async function HomePage() {
+  let questionBankList = [];
+  let questionList = [];
+  try {
+    const questionBankRes = await listQuestionBankVoByPageUsingPost({
+      pageSize: 12,
+      sortField: "createTime",
+      sortOrder: "descend",
+    });
+    questionBankList = questionBankRes.data.records ?? [];
+  } catch (e) {
+    // @ts-ignore
+    message.error("Couldn't fetch topics. " + e.message);
+  }
+  try {
+    const questioListRes = await listQuestionVoByPageUsingPost({
+      pageSize: 12,
+      sortField: "createTime",
+      sortOrder: "descend",
+    });
+    questionList = questioListRes.data.records ?? [];
+  } catch (e) {
+    // @ts-ignore
+    message.error("Couldn't fetch questions. " + e.message);
+  }
   return (
-    <main className={styles.main}>
-      <Button type="primary">Primary Button</Button>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
+    <div id="homePage">
+      <Flex justify="space-between" align="center">
+        <Title level={3}>New Topics</Title>
+        <Link href={"/banks"}>more+</Link>
+      </Flex>
+      <div>
+        Topics List
+        {JSON.stringify(questionBankList)}
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+      <Flex justify="space-between" align="center">
+        <Title level={3}>New Questions</Title>
+        <Link href={"/questions"}>more+</Link>
+      </Flex>
+      <div>
+        Questions List
+        {JSON.stringify(questionList)}
       </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   );
 }
