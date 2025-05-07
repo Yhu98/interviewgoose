@@ -23,7 +23,17 @@ const menus = [
         children: [
             {
                 path: "/admin/user",
-                name: "User Administration",
+                name: "User Management",
+                access: ACCESS_ENUM.ADMIN,
+            },
+            {
+                path: "/admin/bank",
+                name: "Question Bank Management",
+                access: ACCESS_ENUM.ADMIN,
+            },
+            {
+                path: "/admin/question",
+                name: "Question Management",
                 access: ACCESS_ENUM.ADMIN,
             },
         ],
