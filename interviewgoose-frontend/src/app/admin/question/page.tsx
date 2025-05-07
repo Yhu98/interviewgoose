@@ -12,6 +12,8 @@ import { Button, message, Space, Typography } from "antd";
 import React, { useRef, useState } from "react";
 import TagList from "@/components/TagList";
 import MdEditor from "@/components/MdEditor";
+//import { ConfigProvider } from "antd";
+//import en_GB from "antd/lib/locale/en_GB";
 
 /**
  * Question Management Page
@@ -59,11 +61,13 @@ const QuestionAdminPage: React.FC = () => {
       dataIndex: "id",
       valueType: "text",
       hideInForm: true,
+      fieldProps: { placeholder: "Search by id" },
     },
     {
       title: "Title",
       dataIndex: "title",
       valueType: "text",
+      fieldProps: { placeholder: "Search by title" },
     },
     {
       title: "Content",
@@ -72,16 +76,16 @@ const QuestionAdminPage: React.FC = () => {
       hideInSearch: true,
       width: 240,
       renderFormItem: (
-          _,
-          { type, defaultRender, formItemProps, fieldProps, ...rest },
-          form,
+        _,
+        { type, defaultRender, formItemProps, fieldProps, ...rest },
+        form,
       ) => {
         return (
-            // value and onchange will be injected automatically
-            <MdEditor
-                // Components Configuration
-                {...fieldProps}
-            />
+          // value and onchange will be injected automatically
+          <MdEditor
+            // Components Configuration
+            {...fieldProps}
+          />
         );
       },
     },
@@ -92,16 +96,16 @@ const QuestionAdminPage: React.FC = () => {
       hideInSearch: true,
       width: 640,
       renderFormItem: (
-          _,
-          { type, defaultRender, formItemProps, fieldProps, ...rest },
-          form,
+        _,
+        { type, defaultRender, formItemProps, fieldProps, ...rest },
+        form,
       ) => {
         return (
-            // value and onchange will be injected automatically
-            <MdEditor
-                // Components Configuration
-                {...fieldProps}
-            />
+          // value and onchange will be injected automatically
+          <MdEditor
+            // Components Configuration
+            {...fieldProps}
+          />
         );
       },
     },
@@ -111,6 +115,7 @@ const QuestionAdminPage: React.FC = () => {
       valueType: "select",
       fieldProps: {
         mode: "tags",
+        placeholder: "Select tags",
       },
       render: (_, record) => {
         const tagList = JSON.parse(record.tags || "[]");
@@ -132,6 +137,7 @@ const QuestionAdminPage: React.FC = () => {
       valueType: "dateTime",
       hideInSearch: true,
       hideInForm: true,
+      fieldProps: { placeholder: "Search by poster" },
     },
     {
       title: "When Edited",
