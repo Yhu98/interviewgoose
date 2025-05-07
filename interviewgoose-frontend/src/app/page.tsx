@@ -3,10 +3,10 @@ import "./index.css";
 import Title from "antd/es/typography/Title";
 import { Flex, message } from "antd";
 import Link from "next/link";
-import { userLoginUsingPost } from "@/api/userController";
-import { setLoginUser } from "@/stores/loginUser";
 import { listQuestionBankVoByPageUsingPost } from "@/api/questionBankController";
 import { listQuestionVoByPageUsingPost } from "@/api/questionController";
+import QuestionBankList from "@/components/QuestionBankList";
+import QuestionList from "@/components/QuestionList";
 
 /**
  * Home Page
@@ -38,22 +38,20 @@ export default async function HomePage() {
     message.error("Couldn't fetch questions. " + e.message);
   }
   return (
-    <div id="homePage">
+    <div id="homePage" className="max-width-content">
       <Flex justify="space-between" align="center">
         <Title level={3}>New Topics</Title>
         <Link href={"/banks"}>more+</Link>
       </Flex>
       <div>
-        Topics List
-        {JSON.stringify(questionBankList)}
+          <QuestionBankList questionBankList={questionBankList} />
       </div>
       <Flex justify="space-between" align="center">
         <Title level={3}>New Questions</Title>
         <Link href={"/questions"}>more+</Link>
       </Flex>
       <div>
-        Questions List
-        {JSON.stringify(questionList)}
+          <QuestionList questionList={questionList} />
       </div>
     </div>
   );
