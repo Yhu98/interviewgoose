@@ -61,7 +61,7 @@ public class QuestionBankVO implements Serializable {
     /**
      * question list in pages from question bank
      */
-    Page<Question> questionPage;
+    Page<QuestionVO> questionPage;
 
     /**
      * Class to Object
