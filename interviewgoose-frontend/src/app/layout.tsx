@@ -3,10 +3,11 @@ import React, { useCallback, useEffect } from "react";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import BasicLayout from "@/layouts/BasicLayout";
 import "./globals.css";
-import store, { AppDispatch } from "@/stores";
-import { Provider, useDispatch } from "react-redux";
+import store, {AppDispatch} from "@/stores";
+import {Provider, useDispatch} from "react-redux";
 import { getLoginUserUsingGet } from "@/api/userController";
 import { setLoginUser } from "@/stores/loginUser";
+import AccessLayout from "@/access/AccessLayout";
 
 /**
  * Global Init Logic
@@ -28,11 +29,8 @@ const InitLayout: React.FC<
     const res = await getLoginUserUsingGet();
     if (res.data) {
       // update global user state
-    } else {
-      setTimeout(() => {
-        const testUser = { userName: "test login", id: 1 };
-        dispatch(setLoginUser(testUser));
-      }, 3000);
+      // @ts-ignore
+      dispatch(setLoginUser(res.data));
     }
   }, []);
   // execute only for once
@@ -53,7 +51,9 @@ export default function RootLayout({
         <AntdRegistry>
           <Provider store={store}>
             <InitLayout>
-              <BasicLayout>{children}</BasicLayout>
+              <BasicLayout>
+                <AccessLayout>{children}</AccessLayout>
+              </BasicLayout>
             </InitLayout>
           </Provider>
         </AntdRegistry>
