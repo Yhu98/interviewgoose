@@ -250,7 +250,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
      * @return
      */
     @PostMapping("/list/page")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    //@AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public Page<Question> listQuestionByPage(QuestionQueryRequest questionQueryRequest) {
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
