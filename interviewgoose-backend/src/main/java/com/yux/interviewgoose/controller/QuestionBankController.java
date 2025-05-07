@@ -19,6 +19,7 @@ import com.yux.interviewgoose.model.entity.QuestionBank;
 import com.yux.interviewgoose.model.entity.QuestionBankQuestion;
 import com.yux.interviewgoose.model.entity.User;
 import com.yux.interviewgoose.model.vo.QuestionBankVO;
+import com.yux.interviewgoose.model.vo.QuestionVO;
 import com.yux.interviewgoose.service.QuestionBankService;
 import com.yux.interviewgoose.service.QuestionService;
 import com.yux.interviewgoose.service.UserService;
@@ -153,7 +154,8 @@ public class QuestionBankController {
             QuestionQueryRequest questionQueryRequest = new QuestionQueryRequest();
             questionQueryRequest.setQuestionBankId(id);
             Page<Question> questionPage = questionService.listQuestionByPage(questionQueryRequest);
-            questionBankVO.setQuestionPage(questionPage);
+            Page<QuestionVO> questionVOPage = questionService.getQuestionVOPage(questionPage, request);
+            questionBankVO.setQuestionPage(questionVOPage);
         }
 
         return ResultUtils.success(questionBankVO);
