@@ -3,10 +3,9 @@
 import {
   GithubFilled,
   LogoutOutlined,
-  SearchOutlined,
 } from "@ant-design/icons";
 import { ProLayout } from "@ant-design/pro-components";
-import { Dropdown, Input, message, theme } from "antd";
+import { Dropdown, message, } from "antd";
 import React, { ReactNode } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -22,49 +21,14 @@ import getAccessibleMenus from "@/access/menuAccess";
 import { userLogoutUsingPost } from "@/api/userController";
 import LoginUser, { setLoginUser } from "@/stores/loginUser";
 import { DEFAULT_USER } from "@/constant/user";
-import { ProForm } from "@ant-design/pro-form/lib";
 import { useRouter } from "next/navigation";
+import SearchInput from "@/layouts/BasicLayout/components/SearchInput";
 
 /**
  * Global Basic Layout
  * @param children
  * @constructor
  */
-const SearchInput = () => {
-  const { token } = theme.useToken();
-  return (
-    <div
-      key="SearchOutlined"
-      aria-hidden
-      style={{
-        display: "flex",
-        alignItems: "center",
-        marginInlineEnd: 24,
-      }}
-      onMouseDown={(e) => {
-        e.stopPropagation();
-        e.preventDefault();
-      }}
-    >
-      <Input
-        style={{
-          borderRadius: 4,
-          marginInlineEnd: 12,
-        }}
-        prefix={
-          <SearchOutlined
-            style={{
-              color: token.colorTextLightSolid,
-            }}
-          />
-        }
-        placeholder="search question"
-        variant="borderless"
-      />
-    </div>
-  );
-};
-
 interface Props {
   children: ReactNode;
 }
