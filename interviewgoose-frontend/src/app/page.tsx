@@ -27,12 +27,12 @@ export default async function HomePage() {
     message.error("Couldn't fetch topics. " + e.message);
   }
   try {
-    const questioListRes = await listQuestionVoByPageUsingPost({
+    const questionRes = await listQuestionVoByPageUsingPost({
       pageSize: 12,
       sortField: "createTime",
       sortOrder: "descend",
     });
-    questionList = questioListRes.data.records ?? [];
+    questionList = questionRes.data.records ?? [];
   } catch (e) {
     // @ts-ignore
     message.error("Couldn't fetch questions. " + e.message);
