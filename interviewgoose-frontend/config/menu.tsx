@@ -12,7 +12,7 @@ const menus = [
         name: "Questions",
     },
     {
-        path: "/topics",
+        path: "/banks",
         name: "Topics",
     },
     {
@@ -28,7 +28,7 @@ const menus = [
             },
             {
                 path: "/admin/bank",
-                name: "Question Bank Management",
+                name: "Topic Management",
                 access: ACCESS_ENUM.ADMIN,
             },
             {
