@@ -156,6 +156,7 @@ public class QuestionBankController {
             // support multiple paging if needed
             questionQueryRequest.setPageSize(questionBankQueryRequest.getPageSize());
             questionQueryRequest.setCurrent(questionBankQueryRequest.getCurrent());
+            // encapsulate questionPage => questionVOPage
             Page<Question> questionPage = questionService.listQuestionByPage(questionQueryRequest);
             Page<QuestionVO> questionVOPage = questionService.getQuestionVOPage(questionPage, request);
             questionBankVO.setQuestionPage(questionVOPage);
