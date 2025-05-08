@@ -8,7 +8,7 @@ import Meta from "antd/es/card/Meta";
 import Paragraph from "antd/es/typography/Paragraph";
 
 /**
- * Home Page
+ * Question Bank (Topic) Page
  * @constructor
  */
 export default async function BankPage({ params }) {
@@ -23,14 +23,14 @@ export default async function BankPage({ params }) {
     bank = res.data;
   } catch (e) {
     // @ts-ignore
-    console.error("Couldn't fetch topic. " + e.message);
+    console.error("Couldn't find topic. " + e.message);
   }
   if (!bank) {
     return <div>Topic not found</div>;
   }
   let firstQuestionId;
   if (bank.questionPage?.records && bank.questionPage.records.length > 0) {
-    firstQuestionId = bank.questionPage.records[0];
+    firstQuestionId = bank.questionPage.records[0].id;
   }
 
   return (
