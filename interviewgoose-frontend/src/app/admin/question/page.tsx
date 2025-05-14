@@ -1,11 +1,17 @@
 "use client";
 import CreateModal from "./components/CreateModal";
 import UpdateModal from "./components/UpdateModal";
+import UpdateBankModal from "./components/UpdateBankModal";
 import {
   deleteQuestionUsingPost,
   listQuestionByPageUsingPost,
 } from "@/api/questionController";
-import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  TagOutlined,
+} from "@ant-design/icons";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProTable } from "@ant-design/pro-components";
 import { Button, message, Space, Typography } from "antd";
@@ -23,10 +29,12 @@ import MdEditor from "@/components/MdEditor";
 const QuestionAdminPage: React.FC = () => {
   // 是否显示新建窗口
   const [createModalVisible, setCreateModalVisible] = useState<boolean>(false);
-  // 是否显示更新窗口
+  // whether display update popup
   const [updateModalVisible, setUpdateModalVisible] = useState<boolean>(false);
+  // whether display update popup (question bank)
+  const [updateBankModalVisible, setUpdateBankModalVisible] = useState<boolean>(false);
   const actionRef = useRef<ActionType>();
-  // 当前用户点击的数据
+  // whether display data the current user clicks  onn
   const [currentRow, setCurrentRow] = useState<API.Question>();
 
   /**
@@ -122,7 +130,12 @@ const QuestionAdminPage: React.FC = () => {
         return <TagList tagList={tagList} />;
       },
     },
-
+    {
+      title: "Topics",
+      dataIndex: "questionBankId",
+      hideInTable: true,
+      hideInForm: true,
+    },
     {
       title: "Who Created",
       dataIndex: "userId",
@@ -169,6 +182,14 @@ const QuestionAdminPage: React.FC = () => {
           >
             <EditOutlined />
           </Typography.Link>
+          <Typography.Link
+            onClick={() => {
+              setCurrentRow(record);
+              setUpdateBankModalVisible(true);
+            }}
+          >
+            <TagOutlined />
+          </Typography.Link>
           <Typography.Link type="danger" onClick={() => handleDelete(record)}>
             <DeleteOutlined />
           </Typography.Link>
@@ -182,6 +203,9 @@ const QuestionAdminPage: React.FC = () => {
         headerTitle={"Question List"}
         actionRef={actionRef}
         rowKey="key"
+        scroll={{
+          x: true,
+        }}
         search={{
           labelWidth: 120,
         }}
@@ -237,6 +261,13 @@ const QuestionAdminPage: React.FC = () => {
         }}
         onCancel={() => {
           setUpdateModalVisible(false);
+        }}
+      />
+      <UpdateBankModal
+        visible={updateBankModalVisible}
+        questionId={currentRow?.id}
+        onCancel={() => {
+          setUpdateBankModalVisible(false);
         }}
       />
     </PageContainer>
