@@ -296,7 +296,7 @@ public class UserController {
     // endregion
 
     /**
-     * 更新个人信息
+     * update my user detail
      *
      * @param userUpdateMyRequest
      * @param request
@@ -316,4 +316,19 @@ public class UserController {
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
+
+    /**
+     * add user clock-on record
+     *
+     * @param request
+     * @return 当前是否已签到成功
+     */
+    @PostMapping("/add/sign_in")
+    public BaseResponse<Boolean> addUserClockOn(HttpServletRequest request) {
+        // Clock-on requires Login
+        User loginUser = userService.getLoginUser(request);
+        boolean result = userService.addUserClockOn(loginUser.getId());
+        return ResultUtils.success(result);
+    }
+
 }
