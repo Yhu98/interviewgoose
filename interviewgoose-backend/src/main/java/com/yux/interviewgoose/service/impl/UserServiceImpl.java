@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yux.interviewgoose.common.ErrorCode;
 import com.yux.interviewgoose.constant.CommonConstant;
+import com.yux.interviewgoose.constant.RedisConstant;
 import com.yux.interviewgoose.exception.BusinessException;
 import com.yux.interviewgoose.mapper.UserMapper;
 import com.yux.interviewgoose.model.dto.user.UserQueryRequest;
@@ -16,13 +17,18 @@ import com.yux.interviewgoose.model.vo.LoginUserVO;
 import com.yux.interviewgoose.model.vo.UserVO;
 import com.yux.interviewgoose.service.UserService;
 import com.yux.interviewgoose.utils.SqlUtils;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RBitSet;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -36,14 +42,17 @@ import org.springframework.util.DigestUtils;
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
+    @Resource
+    private RedissonClient redissonClient;
+
     /**
-     * 盐值，混淆密码
+     * Salt Value, Password Hashing
      */
     public static final String SALT = "hupi";
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
-        // 1. 校验
+        // 1. Validation
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Missing parameter");
         }
@@ -53,21 +62,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (userPassword.length() < 8 || checkPassword.length() < 8) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Account password is too short");
         }
-        // 密码和校验密码相同
+        // password is same as password confirmation
         if (!userPassword.equals(checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Passwords do not match");
         }
         synchronized (userAccount.intern()) {
-            // 账户不能重复
+            // DO not allow duplicate user account
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("userAccount", userAccount);
             long count = this.baseMapper.selectCount(queryWrapper);
             if (count > 0) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "Account already exists");
             }
-            // 2. 加密
+            // 2. password encryption
             String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
-            // 3. 插入数据
+            // 3. insert record
             User user = new User();
             user.setUserAccount(userAccount);
             user.setUserName(userAccount);
@@ -82,7 +91,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
-        // 1. 校验
+        // 1. Validation
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Missing parameter");
         }
@@ -92,19 +101,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (userPassword.length() < 8) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Account password is not correct");
         }
-        // 2. 加密
+        // 2. password encryption
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
-        // 查询用户是否存在
+        // check whether user exists
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", userAccount);
         queryWrapper.eq("userPassword", encryptPassword);
         User user = this.baseMapper.selectOne(queryWrapper);
-        // 用户不存在
+        // user does not exist
         if (user == null) {
             log.info("user login failed, userAccount cannot match userPassword");
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Account does not exist, or password is not correct.");
         }
-        // 3. 记录用户的登录态
+        // 3. remember user state
         request.getSession().setAttribute(USER_LOGIN_STATE, user);
         return this.getLoginUserVO(user);
     }
@@ -115,15 +124,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String mpOpenId = wxOAuth2UserInfo.getOpenid();
         // 单机锁
         synchronized (unionId.intern()) {
-            // 查询用户是否已存在
+            // check whether the user exists
             QueryWrapper<User> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("unionId", unionId);
             User user = this.getOne(queryWrapper);
-            // 被封号，禁止登录
+            // do not allow logging in if UserRole is Ban
             if (user != null && UserRoleEnum.BAN.getValue().equals(user.getUserRole())) {
                 throw new BusinessException(ErrorCode.FORBIDDEN_ERROR, "Account is banned. Access denied.");
             }
-            // 用户不存在则创建
+            // Create a new user if the user does not exist
             if (user == null) {
                 user = new User();
                 user.setUnionId(unionId);
@@ -135,7 +144,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     throw new BusinessException(ErrorCode.SYSTEM_ERROR, "Login unsuccessful.");
                 }
             }
-            // 记录用户的登录态
+            // record the user Login State
             request.getSession().setAttribute(USER_LOGIN_STATE, user);
             return getLoginUserVO(user);
         }
@@ -184,14 +193,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
-     * 是否为管理员
+     * is Administrator ot Not
      *
      * @param request
      * @return
      */
     @Override
     public boolean isAdmin(HttpServletRequest request) {
-        // 仅管理员可查询
+        // Only Admin can inspect
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User user = (User) userObj;
         return isAdmin(user);
@@ -203,7 +212,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
-     * 用户注销
+     * User Logout Service Implementation
      *
      * @param request
      */
@@ -212,7 +221,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (request.getSession().getAttribute(USER_LOGIN_STATE) == null) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "Not logged in");
         }
-        // 移除登录态
+        // remove Logged in State
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return true;
     }
@@ -269,4 +278,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 sortField);
         return queryWrapper;
     }
+
+    /**
+     * add user clock-on record
+     *
+     * @param userId User ID
+     * @return true or BitSet
+     */
+    public boolean addUserClockOn(long userId) {
+        LocalDate date = LocalDate.now();
+        String key = RedisConstant.getUserClockOnRedisKey(date.getYear(), userId);
+        RBitSet clockOnBitSet = redissonClient.getBitSet(key);
+        // Get which day the current date is in a year AS offset (counted from 1)
+        int offset = date.getDayOfYear();
+        // check whether there is already clocked on for the current date
+        if (!clockOnBitSet.get(offset)) {
+            return clockOnBitSet.set(offset, true);
+        }
+        // Already clocked on
+        return true;
+    }
+
 }
