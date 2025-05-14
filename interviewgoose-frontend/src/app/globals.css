@@ -8,6 +8,8 @@ html,
 body {
   max-width: 100vw;
   max-height: 100vh;
+  scrollbar-width: thin;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, PingFang SC, Microsoft YaHei, Hiragino Sans, Malgun Gothic, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
 }
 
 .max-width-content {
