@@ -5,14 +5,14 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.yux.interviewgoose.model.entity.User;
 
 /**
- * 帖子点赞服务
+ * Post Likes (Thumbs / Upvote) Services
  *
  * @author Hu
  */
 public interface PostThumbService extends IService<PostThumb> {
 
     /**
-     * 点赞
+     * Post Likes (Thumbs / Upvote)
      *
      * @param postId
      * @param loginUser

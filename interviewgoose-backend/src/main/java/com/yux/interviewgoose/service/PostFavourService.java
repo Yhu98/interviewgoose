@@ -9,14 +9,14 @@ import com.yux.interviewgoose.model.entity.PostFavour;
 import com.yux.interviewgoose.model.entity.User;
 
 /**
- * 帖子收藏服务
+ * Post Favourite Services
  *
  * @author Hu
  */
 public interface PostFavourService extends IService<PostFavour> {
 
     /**
-     * 帖子收藏
+     * Post Favourites
      *
      * @param postId
      * @param loginUser
@@ -25,7 +25,7 @@ public interface PostFavourService extends IService<PostFavour> {
     int doPostFavour(long postId, User loginUser);
 
     /**
-     * 分页获取用户收藏的帖子列表
+     * Post Favourites List by Page
      *
      * @param page
      * @param queryWrapper

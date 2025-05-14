@@ -9,14 +9,14 @@ import com.yux.interviewgoose.model.vo.PostVO;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * 帖子服务
+ * Post Services
  *
  * @author Hu
  */
 public interface PostService extends IService<Post> {
 
     /**
-     * 校验
+     * Post Validation
      *
      * @param post
      * @param add
@@ -32,7 +32,7 @@ public interface PostService extends IService<Post> {
     QueryWrapper<Post> getQueryWrapper(PostQueryRequest postQueryRequest);
 
     /**
-     * 从 ES 查询
+     * Search Using Elastics Search
      *
      * @param postQueryRequest
      * @return
@@ -40,7 +40,7 @@ public interface PostService extends IService<Post> {
     Page<Post> searchFromEs(PostQueryRequest postQueryRequest);
 
     /**
-     * 获取帖子封装
+     * Get Post Value Object
      *
      * @param post
      * @param request
@@ -49,7 +49,7 @@ public interface PostService extends IService<Post> {
     PostVO getPostVO(Post post, HttpServletRequest request);
 
     /**
-     * 分页获取帖子封装
+     * Get Post Value Object Page
      *
      * @param postPage
      * @param request
