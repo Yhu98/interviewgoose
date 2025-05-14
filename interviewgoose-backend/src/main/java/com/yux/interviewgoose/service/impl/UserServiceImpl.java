@@ -19,8 +19,11 @@ import com.yux.interviewgoose.service.UserService;
 import com.yux.interviewgoose.utils.SqlUtils;
 
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -297,6 +300,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         // Already clocked on
         return true;
+    }
+
+    @Override
+    public Map<LocalDate, Boolean> getUserClockOnRecord(long userId, Integer year) {
+        if (year == null) {
+            LocalDate date = LocalDate.now();
+            year = date.getYear();
+        }
+        String key = RedisConstant.getUserClockOnRedisKey(year, userId);
+        RBitSet signInBitSet = redissonClient.getBitSet(key);
+        // LinkedHashMap ensure the order
+        Map<LocalDate, Boolean> result = new LinkedHashMap<>();
+        // get the total number of days in the current year
+        int totalDays = Year.of(year).length();
+        // get the login state record of every day accordingly
+        for (int dayOfYear = 1; dayOfYear <= totalDays; dayOfYear++) {
+            // get key：current date
+            LocalDate currentDate = LocalDate.ofYearDay(year, dayOfYear);
+            // get value：whether user logged in and acted
+            boolean hasRecord = signInBitSet.get(dayOfYear);
+            // put record in the map
+            result.put(currentDate, hasRecord);
+        }
+        return result;
     }
 
 }

@@ -6,7 +6,10 @@ import com.yux.interviewgoose.model.dto.user.UserQueryRequest;
 import com.yux.interviewgoose.model.entity.User;
 import com.yux.interviewgoose.model.vo.LoginUserVO;
 import com.yux.interviewgoose.model.vo.UserVO;
+
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 
@@ -125,5 +128,13 @@ public interface UserService extends IService<User> {
      */
     boolean addUserClockOn(long userId);
 
+    /**
+     * get login records of a user in a specific year
+     *
+     * @param userId user's id
+     * @param year   year (current year if null)
+     * @return clock-on record mapping
+     */
+    Map<LocalDate, Boolean> getUserClockOnRecord(long userId, Integer year);
 
 }

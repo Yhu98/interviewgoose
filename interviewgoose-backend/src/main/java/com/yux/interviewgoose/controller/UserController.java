@@ -10,22 +10,11 @@ import com.yux.interviewgoose.config.WxOpenConfig;
 import com.yux.interviewgoose.constant.UserConstant;
 import com.yux.interviewgoose.exception.BusinessException;
 import com.yux.interviewgoose.exception.ThrowUtils;
-import com.yux.interviewgoose.model.dto.user.UserAddRequest;
-import com.yux.interviewgoose.model.dto.user.UserLoginRequest;
-import com.yux.interviewgoose.model.dto.user.UserQueryRequest;
-import com.yux.interviewgoose.model.dto.user.UserRegisterRequest;
-import com.yux.interviewgoose.model.dto.user.UserUpdateMyRequest;
-import com.yux.interviewgoose.model.dto.user.UserUpdateRequest;
+import com.yux.interviewgoose.model.dto.user.*;
 import com.yux.interviewgoose.model.entity.User;
 import com.yux.interviewgoose.model.vo.LoginUserVO;
 import com.yux.interviewgoose.model.vo.UserVO;
 import com.yux.interviewgoose.service.UserService;
-
-import java.util.List;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import me.chanjar.weixin.common.bean.oauth2.WxOAuth2AccessToken;
@@ -33,12 +22,15 @@ import me.chanjar.weixin.mp.api.WxMpService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Resource;
+
 
 import static com.yux.interviewgoose.service.impl.UserServiceImpl.SALT;
 
@@ -323,12 +315,27 @@ public class UserController {
      * @param request
      * @return 当前是否已签到成功
      */
-    @PostMapping("/add/sign_in")
+    @PostMapping("/add/clock_on")
     public BaseResponse<Boolean> addUserClockOn(HttpServletRequest request) {
         // Clock-on requires Login
         User loginUser = userService.getLoginUser(request);
         boolean result = userService.addUserClockOn(loginUser.getId());
         return ResultUtils.success(result);
+    }
+
+    /**
+     * get user clock-on records
+     *
+     * @param year  year (current year if null)
+     * @param request
+     * @return clock-on record mapping
+     */
+    @GetMapping("/get/clock_on")
+    public BaseResponse<Map<LocalDate, Boolean>> getUserClockOnRecord(Integer year, HttpServletRequest request) {
+        // require login
+        User loginUser = userService.getLoginUser(request);
+        Map<LocalDate, Boolean> userSignInRecord = userService.getUserClockOnRecord(loginUser.getId(), year);
+        return ResultUtils.success(userSignInRecord);
     }
 
 }
