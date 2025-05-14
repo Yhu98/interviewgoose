@@ -6,8 +6,6 @@ import React, { useRef, useState } from "react";
 import TagList from "@/components/TagList";
 import Link from "next/link";
 import { TablePaginationConfig } from "antd";
-import { ConfigProvider } from "antd";
-import enUS from "antd/lib/locale/en_US";
 
 interface Props {
   defaultQuestionList?: API.QuestionVO[];
@@ -60,57 +58,55 @@ export default function QuestionTable(props: Props) {
 
   return (
     <div className="question-table">
-      <ConfigProvider locale={enUS}>
-        <ProTable<API.QuestionVO>
-          actionRef={actionRef}
-          columns={columns}
-          size="large"
-          search={{
-            labelWidth: "auto",
-          }}
-          form={{
-            initialValues: defaultSearchParams,
-          }}
-          dataSource={questionList}
-          pagination={
-            {
-              pageSize: 12,
-              showTotal: (total) => `${total} questions in total`,
-              showSizeChanger: false,
-              total,
-            } as TablePaginationConfig
-          }
-          request={async (params, sort, filter) => {
-            // first time load judgement
-            if (init) {
-              setInit(false);
-              if (defaultQuestionList && defultTotal) {
-                return;
-              }
+      <ProTable<API.QuestionVO>
+        actionRef={actionRef}
+        columns={columns}
+        size="large"
+        search={{
+          labelWidth: "auto",
+        }}
+        form={{
+          initialValues: defaultSearchParams,
+        }}
+        dataSource={questionList}
+        pagination={
+          {
+            pageSize: 12,
+            showTotal: (total) => `${total} questions in total`,
+            showSizeChanger: false,
+            total,
+          } as TablePaginationConfig
+        }
+        request={async (params, sort, filter) => {
+          // first time load judgement
+          if (init) {
+            setInit(false);
+            if (defaultQuestionList && defultTotal) {
+              return;
             }
-            const sortField = Object.keys(sort)?.[0] || "createTime";
-            const sortOrder = sort?.[sortField] || "descend";
-            // request
-            const { data, code } = await listQuestionVoByPageUsingPost({
-              ...params,
-              sortField,
-              sortOrder,
-              ...filter,
-            } as API.UserQueryRequest);
+          }
+          const sortField = Object.keys(sort)?.[0] || "createTime";
+          const sortOrder = sort?.[sortField] || "descend";
+          // request
+          const { data, code } = await listQuestionVoByPageUsingPost({
+            ...params,
+            sortField,
+            sortOrder,
+            ...filter,
+          } as API.UserQueryRequest);
 
-            // update return data
-            const newData = data?.records || [];
-            const newTotal = data?.total || 0;
-            setTotal(newTotal);
-            setQuestionList(newData);
-            return {
-              success: code === 0,
-              data: newData,
-              total: newTotal,
-            };
-          }}
-        />
-      </ConfigProvider>
+          // update return data
+          const newData = data?.records || [];
+          const newTotal = data?.total || 0;
+          setTotal(newTotal);
+          setQuestionList(newData);
+          return {
+            success: code === 0,
+            data: newData,
+            total: newTotal,
+          };
+        }}
+      />
     </div>
   );
 }
