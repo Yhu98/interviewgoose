@@ -8,6 +8,9 @@ import { RootState } from "@/stores";
 import React, { useState } from "react";
 import "./index.css";
 import CalendarChart from "@/app/user/center/components/CalendarChart";
+import ACCESS_ENUM from "@/access/accessEnum";
+import verifyAccess from "@/access/verifyAccess";
+import Forbidden from "@/app/forbidden";
 
 /**
  * User Center Page
@@ -20,7 +23,12 @@ export default function UserCenterPage() {
   const user = loginUser;
   // controlling tab highlighted in menu list
   const [activeTabKey, setActiveTabKey] = useState<string>("info");
-
+  // verify if the user has the valid access
+  const needAccess = ACCESS_ENUM.USER;
+  const haveAccess = verifyAccess(loginUser, needAccess);
+  if (!haveAccess) {
+    return <Forbidden />;
+  }
   return (
     <div id="userCenterPage" className="max-width-content">
       <Row gutter={[16, 16]} className="user-row">
@@ -59,8 +67,12 @@ export default function UserCenterPage() {
               setActiveTabKey(key);
             }}
           >
-              {activeTabKey === "record" && <><CalendarChart /></>}
-              {activeTabKey === "others" && <>bbbbb</>}
+            {activeTabKey === "record" && (
+              <>
+                <CalendarChart />
+              </>
+            )}
+            {activeTabKey === "others" && <>bbbbb</>}
           </Card>
         </Col>
       </Row>
