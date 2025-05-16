@@ -20,7 +20,7 @@ export default async function QuestionsPage({ searchParams }) {
       sortOrder: "descend",
     });
     questionList = res.data.records ?? [];
-    total = questionRes.data.total ?? 0;
+    total = res.data.total ?? 0;
   } catch (e) {
     // @ts-ignore
     console.error("Couldn't find questions，" + e.message);
