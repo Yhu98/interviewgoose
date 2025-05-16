@@ -1,11 +1,8 @@
 "use client";
 
-import {
-  GithubFilled,
-  LogoutOutlined,
-} from "@ant-design/icons";
+import {GithubFilled, LogoutOutlined, UserOutlined} from "@ant-design/icons";
 import { ProLayout } from "@ant-design/pro-components";
-import { Dropdown, message, } from "antd";
+import { Dropdown, message } from "antd";
 import React, { ReactNode } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -98,15 +95,22 @@ export default function BasicLayout({ children }: Props) {
                 menu={{
                   items: [
                     {
+                      key: "userCenter",
+                      icon: <UserOutlined />,
+                      label: loginUser.userName,
+                    },
+                    {
                       key: "logout",
                       icon: <LogoutOutlined />,
-                      label: "Sign out",
+                      label: "Logout",
                     },
                   ],
                   onClick: async (event: { key: React.Key }) => {
                     const { key } = event;
                     if (key === "logout") {
                       userLogout();
+                    } else if (key === "userCenter") {
+                      router.push("/user/center");
                     }
                   },
                 }}
