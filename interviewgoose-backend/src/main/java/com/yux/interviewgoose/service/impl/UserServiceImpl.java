@@ -20,10 +20,7 @@ import com.yux.interviewgoose.utils.SqlUtils;
 
 import java.time.LocalDate;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -303,27 +300,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Map<LocalDate, Boolean> getUserClockOnRecord(long userId, Integer year) {
+    public List<Integer> getUserClockOnRecord(long userId, Integer year) {
         if (year == null) {
             LocalDate date = LocalDate.now();
             year = date.getYear();
         }
         String key = RedisConstant.getUserClockOnRedisKey(year, userId);
         RBitSet signInBitSet = redissonClient.getBitSet(key);
-        // LinkedHashMap ensure the order
-        Map<LocalDate, Boolean> result = new LinkedHashMap<>();
-        // get the total number of days in the current year
-        int totalDays = Year.of(year).length();
-        // get the login state record of every day accordingly
-        for (int dayOfYear = 1; dayOfYear <= totalDays; dayOfYear++) {
-            // get key：current date
-            LocalDate currentDate = LocalDate.ofYearDay(year, dayOfYear);
-            // get value：whether user logged in and acted
-            boolean hasRecord = signInBitSet.get(dayOfYear);
-            // put record in the map
-            result.put(currentDate, hasRecord);
+        // Load BitSet to memory to avoid multiple request
+        BitSet bitSet = signInBitSet.asBitSet();
+        // List all dates that have clock-on record
+        List<Integer> dayList = new ArrayList<>();
+        // Start search next Bit that is set to be 1 from index 0
+        int index = bitSet.nextSetBit(0);
+        while (index >= 0) {
+            dayList.add(index);
+            // search next Bit that is set to be 1
+            index = bitSet.nextSetBit(index + 1);
         }
-        return result;
+        return dayList;
     }
 
 }

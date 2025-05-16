@@ -135,6 +135,6 @@ public interface UserService extends IService<User> {
      * @param year   year (current year if null)
      * @return clock-on record mapping
      */
-    Map<LocalDate, Boolean> getUserClockOnRecord(long userId, Integer year);
+    List<Integer> getUserClockOnRecord(long userId, Integer year);
 
 }

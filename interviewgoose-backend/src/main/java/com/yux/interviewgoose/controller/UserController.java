@@ -331,11 +331,11 @@ public class UserController {
      * @return clock-on record mapping
      */
     @GetMapping("/get/clock_on")
-    public BaseResponse<Map<LocalDate, Boolean>> getUserClockOnRecord(Integer year, HttpServletRequest request) {
+    public BaseResponse<List<Integer>> getUserClockOnRecord(Integer year, HttpServletRequest request) {
         // require login
         User loginUser = userService.getLoginUser(request);
-        Map<LocalDate, Boolean> userSignInRecord = userService.getUserClockOnRecord(loginUser.getId(), year);
-        return ResultUtils.success(userSignInRecord);
+        List<Integer> userClockOnRecord = userService.getUserClockOnRecord(loginUser.getId(), year);
+        return ResultUtils.success(userClockOnRecord);
     }
 
 }
