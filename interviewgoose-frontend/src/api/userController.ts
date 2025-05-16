@@ -168,7 +168,6 @@ export async function updateUserUsingPost(
   });
 }
 
-/** updateMyUser POST /api/user/update/my */
 export async function updateMyUserUsingPost(
   body: API.UserUpdateMyRequest,
   options?: { [key: string]: any }
@@ -179,6 +178,29 @@ export async function updateMyUserUsingPost(
       "Content-Type": "application/json",
     },
     data: body,
+    ...(options || {}),
+  });
+}
+
+/** addUserClockOn POST /api/user/add/clock_on */
+export async function addUserClockOnUsingPost(options?: { [key: string]: any }) {
+  return request<API.BaseResponseBoolean_>('/api/user/add/clock_on', {
+    method: 'POST',
+    ...(options || {}),
+  });
+}
+
+/** getUserSignInRecord GET /api/user/get/clock_on */
+export async function getUserClockOnRecordUsingGet(
+    // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+    params: API.getUserClockOnRecordUsingGETParams,
+    options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseListInt_>('/api/user/get/clock_on', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
     ...(options || {}),
   });
 }
