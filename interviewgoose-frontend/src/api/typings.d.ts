@@ -180,6 +180,11 @@ declare namespace API {
     id?: number;
   };
 
+  type getUserClockOnRecordUsingGETParams = {
+    /** year */
+    year?: number;
+  };
+
   type LoginUserVO = {
     createTime?: string;
     id?: number;
