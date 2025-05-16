@@ -20,7 +20,7 @@ const verifyAccess = (
   // need to log in to access
   if (needAccess === ACCESS_ENUM.USER) {
     // no access if user not logged in
-    if (needAccess === ACCESS_ENUM.NOT_LOGIN) {
+    if (loginUserAccess === ACCESS_ENUM.NOT_LOGIN) {
       return false;
     }
   }
