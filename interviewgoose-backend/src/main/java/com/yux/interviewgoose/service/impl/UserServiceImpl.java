@@ -19,7 +19,6 @@ import com.yux.interviewgoose.service.UserService;
 import com.yux.interviewgoose.utils.SqlUtils;
 
 import java.time.LocalDate;
-import java.time.Year;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
@@ -34,8 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 /**
- * 用户服务实现
- *
+ * User Service Implementation\
  * @author Hu
  */
 @Service
@@ -151,7 +149,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
-     * 获取当前登录用户
+     * Get current logged in user
      *
      * @param request
      * @return
@@ -175,7 +173,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 获取当前登录用户（允许未登录）
-     *
      * @param request
      * @return
      */
@@ -194,7 +191,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * is Administrator ot Not
-     *
      * @param request
      * @return
      */
@@ -213,7 +209,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * User Logout Service Implementation
-     *
      * @param request
      */
     @Override
@@ -281,10 +276,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * add user clock-on record
-     *
      * @param userId User ID
      * @return true or BitSet
      */
+    @Override
     public boolean addUserClockOn(long userId) {
         LocalDate date = LocalDate.now();
         String key = RedisConstant.getUserClockOnRedisKey(date.getYear(), userId);
@@ -299,6 +294,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return true;
     }
 
+    /**
+     * get login records of a user in a specific year
+     * @param userId user's id
+     * @param year   year (current year if null)
+     * @return clock-on record mapping
+     */
     @Override
     public List<Integer> getUserClockOnRecord(long userId, Integer year) {
         if (year == null) {
@@ -320,5 +321,4 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return dayList;
     }
-
 }
