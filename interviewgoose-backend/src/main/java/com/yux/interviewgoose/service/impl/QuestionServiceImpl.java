@@ -6,18 +6,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.yux.interviewgoose.annotation.AuthCheck;
-import com.yux.interviewgoose.common.BaseResponse;
 import com.yux.interviewgoose.common.ErrorCode;
-import com.yux.interviewgoose.common.ResultUtils;
 import com.yux.interviewgoose.constant.CommonConstant;
-import com.yux.interviewgoose.constant.UserConstant;
 import com.yux.interviewgoose.exception.ThrowUtils;
 import com.yux.interviewgoose.mapper.QuestionMapper;
+import com.yux.interviewgoose.model.dto.question.QuestionEsDTO;
 import com.yux.interviewgoose.model.dto.question.QuestionQueryRequest;
 import com.yux.interviewgoose.model.entity.Question;
-//import com.yux.interviewgoose.model.entity.QuestionFavour;
-//import com.yux.interviewgoose.model.entity.QuestionThumb;
 import com.yux.interviewgoose.model.entity.QuestionBankQuestion;
 import com.yux.interviewgoose.model.entity.User;
 import com.yux.interviewgoose.model.vo.QuestionVO;
@@ -29,16 +24,22 @@ import com.yux.interviewgoose.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -56,6 +57,9 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
     @Resource
     private QuestionBankQuestionService questionBankQuestionService;
+
+    @Resource
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     /**
      * data validation
@@ -114,7 +118,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
             // 需要拼接查询条件
             queryWrapper.and(qw -> qw.like("title", searchText).or().like("content", searchText));
         }
-        // 模糊查询
+        // vague search
         queryWrapper.like(StringUtils.isNotBlank(title), "title", title);
         queryWrapper.like(StringUtils.isNotBlank(content), "content", content);
         queryWrapper.like(StringUtils.isNotBlank(answer), "answer", answer);
@@ -124,11 +128,11 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
                 queryWrapper.like("tags", "\"" + tag + "\"");
             }
         }
-        // 精确查询
+        // accurate search
         queryWrapper.ne(ObjectUtils.isNotEmpty(notId), "id", notId);
         queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
-        // 排序规则
+        // Sorting rule
         queryWrapper.orderBy(SqlUtils.validSortField(sortField),
                 sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
@@ -249,7 +253,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
      * @param questionQueryRequest
      * @return
      */
-    @PostMapping("/list/page")
+    //@PostMapping("/list/page")
     //@AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public Page<Question> listQuestionByPage(QuestionQueryRequest questionQueryRequest) {
         long current = questionQueryRequest.getCurrent();
@@ -270,15 +274,91 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
                 Set<Long> questionIdSet = questionList.stream()
                         .map(QuestionBankQuestion::getQuestionId)
                         .collect(Collectors.toSet());
-                // reset search condition
+                // reset q condition
                 queryWrapper.in("id", questionIdSet);
             }
         }
-
-
-        // 查询数据库
+        // Query From Database
         Page<Question> questionPage = this.page(new Page<>(current, size), queryWrapper);
         return questionPage;
     }
+
+    /**
+     *
+     * @param questionQueryRequest
+     * @return
+     */
+    @Override
+    public Page<Question> searchFromEs(QuestionQueryRequest questionQueryRequest) {
+        // Params
+        Long id = questionQueryRequest.getId();
+        Long notId = questionQueryRequest.getNotId();
+        String searchText = questionQueryRequest.getSearchText();
+        List<String> tags = questionQueryRequest.getTags();
+        Long questionBankId = questionQueryRequest.getQuestionBankId();
+        Long userId = questionQueryRequest.getUserId();
+        // starting page of ES is 0
+        int current = questionQueryRequest.getCurrent() - 1;
+        int pageSize = questionQueryRequest.getPageSize();
+        String sortField = questionQueryRequest.getSortField();
+        String sortOrder = questionQueryRequest.getSortOrder();
+        // Construct query condition
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        // filtering
+        boolQueryBuilder.filter(QueryBuilders.termQuery("isDelete", 0));
+        if (id != null) {
+            boolQueryBuilder.filter(QueryBuilders.termQuery("id", id));
+        }
+        if (notId != null) {
+            boolQueryBuilder.mustNot(QueryBuilders.termQuery("id", notId));
+        }
+        if (userId != null) {
+            boolQueryBuilder.filter(QueryBuilders.termQuery("userId", userId));
+        }
+        if (questionBankId != null) {
+            boolQueryBuilder.filter(QueryBuilders.termQuery("questionBankId", questionBankId));
+        }
+        // must include all tags
+        if (CollUtil.isNotEmpty(tags)) {
+            for (String tag : tags) {
+                boolQueryBuilder.filter(QueryBuilders.termQuery("tags", tag));
+            }
+        }
+        // search by keywords
+        if (StringUtils.isNotBlank(searchText)) {
+            boolQueryBuilder.should(QueryBuilders.matchQuery("title", searchText));
+            boolQueryBuilder.should(QueryBuilders.matchQuery("content", searchText));
+            boolQueryBuilder.should(QueryBuilders.matchQuery("answer", searchText));
+            boolQueryBuilder.minimumShouldMatch(1);
+        }
+        // sorting
+        SortBuilder<?> sortBuilder = SortBuilders.scoreSort();
+        if (StringUtils.isNotBlank(sortField)) {
+            sortBuilder = SortBuilders.fieldSort(sortField);
+            sortBuilder.order(CommonConstant.SORT_ORDER_ASC.equals(sortOrder) ? SortOrder.ASC : SortOrder.DESC);
+        }
+        // paging
+        PageRequest pageRequest = PageRequest.of(current, pageSize);
+        // construct search query
+        NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
+                .withQuery(boolQueryBuilder)
+                .withPageable(pageRequest)
+                .withSorts(sortBuilder)
+                .build();
+        SearchHits<QuestionEsDTO> searchHits = elasticsearchRestTemplate.search(searchQuery, QuestionEsDTO.class);
+        // Utilize MyBatis Plus's Page object to encapsulate and return paginated query results
+        Page<Question> page = new Page<>();
+        page.setTotal(searchHits.getTotalHits());
+        List<Question> resourceList = new ArrayList<>();
+        if (searchHits.hasSearchHits()) {
+            List<SearchHit<QuestionEsDTO>> searchHitList = searchHits.getSearchHits();
+            for (SearchHit<QuestionEsDTO> questionEsDTOSearchHit : searchHitList) {
+                resourceList.add(QuestionEsDTO.dtoToObj(questionEsDTOSearchHit.getContent()));
+            }
+        }
+        page.setRecords(resourceList);
+        return page;
+    }
+
 }
 
