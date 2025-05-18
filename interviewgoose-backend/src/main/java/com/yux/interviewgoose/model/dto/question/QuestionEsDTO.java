@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @author Hu
  **/
-@Document(indexName = "post")
+@Document(indexName = "question")
 @Data
 public class QuestionEsDTO implements Serializable {
 
