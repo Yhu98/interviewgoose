@@ -4,12 +4,13 @@ import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { ProTable } from "@ant-design/pro-components";
 import React, { useRef, useState } from "react";
 import TagList from "@/components/TagList";
+import { TablePaginationConfig } from "antd";
 import Link from "next/link";
-import { Button, TablePaginationConfig } from "antd";
+import "./index.css";
 
 interface Props {
   defaultQuestionList?: API.QuestionVO[];
-  defultTotal?: number;
+  defaultTotal?: number;
   // default search
   defaultSearchParams?: API.QuestionQueryRequest;
 }
@@ -19,19 +20,19 @@ interface Props {
  *
  * @constructor
  */
-export default function QuestionTable(props: Props) {
-  const { defaultQuestionList, defultTotal, defaultSearchParams = {} } = props;
+const QuestionTable: React.FC = (props: Props) => {
+  const { defaultQuestionList, defaultTotal, defaultSearchParams = {} } = props;
   const actionRef = useRef<ActionType>();
   // question list
   const [questionList, setQuestionList] = useState<API.QuestionVO[]>(
-    defaultQuestionList || [],
+      defaultQuestionList || [],
   );
   // total of questions
-  const [total, setTotal] = useState<number>(defultTotal || 0);
+  const [total, setTotal] = useState<number>(defaultTotal || 0);
   // judge if it is first time to load the data
   const [init, setInit] = useState<boolean>(true);
   /**
-   * 表格列配置
+   * Table Columns Config
    */
   const columns: ProColumns<API.QuestionVO>[] = [
     {
@@ -48,19 +49,21 @@ export default function QuestionTable(props: Props) {
       dataIndex: "title",
       valueType: "text",
       hideInSearch: true, // hide in search
-      render(_, record) {
+      render: (_, record) => {
         return <Link href={`/question/${record.id}`}>{record.title}</Link>;
       },
     },
     {
       title: "Tags",
-      dataIndex: "tags",
+      dataIndex: "tagList",
       valueType: "select",
       fieldProps: {
         mode: "tags",
         placeholder: "Select tags",
       },
-      render: (_, record) => <TagList tagList={record.tagList} />,
+      render: (_, record) => {
+        return <TagList tagList={record.tagList} />;
+      },
     },
   ];
 
@@ -68,10 +71,11 @@ export default function QuestionTable(props: Props) {
     <div className="question-table">
       <ProTable<API.QuestionVO>
         actionRef={actionRef}
-        columns={columns}
         size="large"
         search={{
           labelWidth: "auto",
+          resetText: "Reset",
+          searchText: "Search",
         }}
         form={{
           initialValues: defaultSearchParams,
@@ -80,7 +84,7 @@ export default function QuestionTable(props: Props) {
         pagination={
           {
             pageSize: 12,
-            showTotal: (total) => `${total} questions in total`,
+            showTotal: (total) => `${total} Questions in Total`,
             showSizeChanger: false,
             total,
           } as TablePaginationConfig
@@ -89,9 +93,7 @@ export default function QuestionTable(props: Props) {
           // first time load judgement
           if (init) {
             setInit(false);
-            if (defaultQuestionList && defultTotal) {
-              return;
-            }
+            if (defaultQuestionList && defaultTotal) { return; }
           }
           const sortField = Object.keys(sort)?.[0] || "createTime";
           const sortOrder = sort?.[sortField] || "descend";
@@ -101,20 +103,21 @@ export default function QuestionTable(props: Props) {
             sortField,
             sortOrder,
             ...filter,
-          } as API.UserQueryRequest);
-
+          } as API.QuestionQueryRequest);
           // update return data
           const newData = data?.records || [];
           const newTotal = data?.total || 0;
-          setTotal(newTotal);
           setQuestionList(newData);
+          setTotal(newTotal);
           return {
             success: code === 0,
             data: newData,
             total: newTotal,
           };
         }}
+        columns={columns}
       />
     </div>
   );
-}
+};
+export default QuestionTable;
