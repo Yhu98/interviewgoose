@@ -16,7 +16,7 @@ public class Question implements Serializable {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID) // Anti-Spider
+    @TableId(type = IdType.ASSIGN_ID) // Anti-crawlers
     private Long id;
 
     /**
