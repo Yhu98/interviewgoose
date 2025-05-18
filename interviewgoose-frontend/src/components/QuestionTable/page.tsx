@@ -1,11 +1,11 @@
 "use client";
-import { listQuestionVoByPageUsingPost } from "@/api/questionController";
+import { searchQuestionVoByPageUsingPost } from "@/api/questionController";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { ProTable } from "@ant-design/pro-components";
 import React, { useRef, useState } from "react";
 import TagList from "@/components/TagList";
 import Link from "next/link";
-import { TablePaginationConfig } from "antd";
+import { Button, TablePaginationConfig } from "antd";
 
 interface Props {
   defaultQuestionList?: API.QuestionVO[];
@@ -35,11 +35,19 @@ export default function QuestionTable(props: Props) {
    */
   const columns: ProColumns<API.QuestionVO>[] = [
     {
+      title: "Search",
+      dataIndex: "searchText",
+      valueType: "text",
+      fieldProps: {
+        placeholder: "Search by keywords",
+      },
+      hideInTable: true, // hide in table
+    },
+    {
       title: "Title",
       dataIndex: "title",
-      fieldProps: {
-        placeholder: "Search by title",
-      },
+      valueType: "text",
+      hideInSearch: true, // hide in search
       render(_, record) {
         return <Link href={`/question/${record.id}`}>{record.title}</Link>;
       },
@@ -88,7 +96,7 @@ export default function QuestionTable(props: Props) {
           const sortField = Object.keys(sort)?.[0] || "createTime";
           const sortOrder = sort?.[sortField] || "descend";
           // request
-          const { data, code } = await listQuestionVoByPageUsingPost({
+          const { data, code } = await searchQuestionVoByPageUsingPost({
             ...params,
             sortField,
             sortOrder,
