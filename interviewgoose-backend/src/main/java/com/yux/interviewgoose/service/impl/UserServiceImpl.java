@@ -316,7 +316,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         int index = bitSet.nextSetBit(0);
         while (index >= 0) {
             dayList.add(index);
-            // search next Bit that is set to be 1
+            // Query next Bit that is set to be 1
             index = bitSet.nextSetBit(index + 1);
         }
         return dayList;

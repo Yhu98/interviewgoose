@@ -22,5 +22,4 @@ public interface RedisConstant {
     static String getUserClockOnRedisKey(int year, long userId) {
         return String.format("%s:%s:%s", USER_CLOCK_ON_REDIS_KEY_PREFIX, year, userId);
     }
-
 }
