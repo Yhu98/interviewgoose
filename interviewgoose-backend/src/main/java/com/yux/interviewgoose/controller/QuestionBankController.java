@@ -65,14 +65,14 @@ public class QuestionBankController {
         ThrowUtils.throwIf(questionBankAddRequest == null, ErrorCode.PARAMS_ERROR);
         QuestionBank questionBank = new QuestionBank();
         BeanUtils.copyProperties(questionBankAddRequest, questionBank);
-        // 数据校验
+        // data validation
         questionBankService.validQuestionBank(questionBank, true);
         User loginUser = userService.getLoginUser(request);
         questionBank.setUserId(loginUser.getId());
-        // 写入数据库
+        // write to database
         boolean result = questionBankService.save(questionBank);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-        // 返回新写入的数据 id
+        // return data id just written to database
         long newQuestionBankId = questionBank.getId();
         return ResultUtils.success(newQuestionBankId);
     }
@@ -92,10 +92,10 @@ public class QuestionBankController {
         }
         User user = userService.getLoginUser(request);
         long id = deleteRequest.getId();
-        // 判断是否存在
+        // check if exist
         QuestionBank oldQuestionBank = questionBankService.getById(id);
         ThrowUtils.throwIf(oldQuestionBank == null, ErrorCode.NOT_FOUND_ERROR);
-        // 仅本人或管理员可删除
+        // can be deleted by admin or creator only
         if (!oldQuestionBank.getUserId().equals(user.getId()) && !userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
@@ -120,9 +120,9 @@ public class QuestionBankController {
         // todo 在此处将实体类和 DTO 进行转换
         QuestionBank questionBank = new QuestionBank();
         BeanUtils.copyProperties(questionBankUpdateRequest, questionBank);
-        // 数据校验
+        // data validation
         questionBankService.validQuestionBank(questionBank, false);
-        // 判断是否存在
+        // check if exist
         long id = questionBankUpdateRequest.getId();
         QuestionBank oldQuestionBank = questionBankService.getById(id);
         ThrowUtils.throwIf(oldQuestionBank == null, ErrorCode.NOT_FOUND_ERROR);
@@ -143,7 +143,7 @@ public class QuestionBankController {
         ThrowUtils.throwIf(questionBankQueryRequest == null, ErrorCode.PARAMS_ERROR);
         Long id = questionBankQueryRequest.getId();
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
-        // 查询数据库
+        // query database
         QuestionBank questionBank = questionBankService.getById(id);
         ThrowUtils.throwIf(questionBank == null, ErrorCode.NOT_FOUND_ERROR);
         // query question bank wrapper
@@ -176,7 +176,7 @@ public class QuestionBankController {
     public BaseResponse<Page<QuestionBank>> listQuestionBankByPage(@RequestBody QuestionBankQueryRequest questionBankQueryRequest) {
         long current = questionBankQueryRequest.getCurrent();
         long size = questionBankQueryRequest.getPageSize();
-        // 查询数据库
+        // query database
         Page<QuestionBank> questionBankPage = questionBankService.page(new Page<>(current, size),
                 questionBankService.getQueryWrapper(questionBankQueryRequest));
         return ResultUtils.success(questionBankPage);
@@ -194,13 +194,13 @@ public class QuestionBankController {
                                                                HttpServletRequest request) {
         long current = questionBankQueryRequest.getCurrent();
         long size = questionBankQueryRequest.getPageSize();
-        // Limit spider
+        // Limit crawlers
         // Allow data scraping size to 200
         ThrowUtils.throwIf(size > 200, ErrorCode.PARAMS_ERROR);
-        // 查询数据库
+        // query database
         Page<QuestionBank> questionBankPage = questionBankService.page(new Page<>(current, size),
                 questionBankService.getQueryWrapper(questionBankQueryRequest));
-        // 获取封装类
+        // return wrapper
         return ResultUtils.success(questionBankService.getQuestionBankVOPage(questionBankPage, request));
     }
 
@@ -215,17 +215,17 @@ public class QuestionBankController {
     public BaseResponse<Page<QuestionBankVO>> listMyQuestionBankVOByPage(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
                                                                  HttpServletRequest request) {
         ThrowUtils.throwIf(questionBankQueryRequest == null, ErrorCode.PARAMS_ERROR);
-        // 补充查询条件，只查询当前登录用户的数据
+        // only query data of currently logged-in user
         User loginUser = userService.getLoginUser(request);
         questionBankQueryRequest.setUserId(loginUser.getId());
         long current = questionBankQueryRequest.getCurrent();
         long size = questionBankQueryRequest.getPageSize();
-        // Anti Spider
+        // prevent abuse by crawlers
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
-        // 查询数据库
+        // query database
         Page<QuestionBank> questionBankPage = questionBankService.page(new Page<>(current, size),
                 questionBankService.getQueryWrapper(questionBankQueryRequest));
-        // 获取封装类
+        // return wrapper
         return ResultUtils.success(questionBankService.getQuestionBankVOPage(questionBankPage, request));
     }
 
@@ -244,10 +244,10 @@ public class QuestionBankController {
         }
         QuestionBank questionBank = new QuestionBank();
         BeanUtils.copyProperties(questionBankEditRequest, questionBank);
-        // 数据校验
+        // data validation
         questionBankService.validQuestionBank(questionBank, false);
         User loginUser = userService.getLoginUser(request);
-        // 判断是否存在
+        // check if exist
         long id = questionBankEditRequest.getId();
         QuestionBank oldQuestionBank = questionBankService.getById(id);
         ThrowUtils.throwIf(oldQuestionBank == null, ErrorCode.NOT_FOUND_ERROR);

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * 文件接口
+ * file controller
  *
  * @author Hu
  */
@@ -40,7 +40,7 @@ public class FileController {
     private CosManager cosManager;
 
     /**
-     * 文件上传
+     * File Uploader
      *
      * @param multipartFile
      * @param uploadFileRequest
@@ -71,10 +71,10 @@ public class FileController {
             return ResultUtils.success(FileConstant.COS_HOST + filepath);
         } catch (Exception e) {
             log.error("file upload error, filepath = " + filepath, e);
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "Uploading failed");
         } finally {
             if (file != null) {
-                // 删除临时文件
+                // delete temp file
                 boolean delete = file.delete();
                 if (!delete) {
                     log.error("file delete error, filepath = {}", filepath);
@@ -97,10 +97,10 @@ public class FileController {
         final long ONE_M = 1024 * 1024L;
         if (FileUploadBizEnum.USER_AVATAR.equals(fileUploadBizEnum)) {
             if (fileSize > ONE_M) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小不能超过 1M");
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "File must be less than 1M");
             }
             if (!Arrays.asList("jpeg", "jpg", "svg", "png", "webp").contains(fileSuffix)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件类型错误");
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "Invalid file type");
             }
         }
     }

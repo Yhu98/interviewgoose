@@ -35,7 +35,7 @@ import javax.annotation.Resource;
 import static com.yux.interviewgoose.service.impl.UserServiceImpl.SALT;
 
 /**
- * 用户接口
+ * User Controller
  *
  * @author Hu
  */
@@ -50,10 +50,10 @@ public class UserController {
     @Resource
     private WxOpenConfig wxOpenConfig;
 
-    // region 登录相关
+    // region Login
 
     /**
-     * 用户注册
+     * user signup
      *
      * @param userRegisterRequest
      * @return
@@ -74,7 +74,7 @@ public class UserController {
     }
 
     /**
-     * 用户登录
+     * user login
      *
      * @param userLoginRequest
      * @param request
@@ -95,7 +95,7 @@ public class UserController {
     }
 
     /**
-     * 用户登录（微信开放平台）
+     * user login (wechat public platform)
      */
     @GetMapping("/login/wx_open")
     public BaseResponse<LoginUserVO> userLoginByWxOpen(HttpServletRequest request, HttpServletResponse response,
@@ -118,7 +118,7 @@ public class UserController {
     }
 
     /**
-     * 用户注销
+     * user logout
      *
      * @param request
      * @return
@@ -133,7 +133,7 @@ public class UserController {
     }
 
     /**
-     * 获取当前登录用户
+     * get currently logged-in user
      *
      * @param request
      * @return
@@ -146,10 +146,10 @@ public class UserController {
 
     // endregion
 
-    // region 增删改查
+    // region CRUD
 
     /**
-     * 创建用户
+     * create user
      *
      * @param userAddRequest
      * @param request
@@ -163,7 +163,7 @@ public class UserController {
         }
         User user = new User();
         BeanUtils.copyProperties(userAddRequest, user);
-        // 默认密码 12345678
+        // default pwd 12345678
         String defaultPassword = "12345678";
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + defaultPassword).getBytes());
         user.setUserPassword(encryptPassword);
@@ -173,7 +173,7 @@ public class UserController {
     }
 
     /**
-     * 删除用户
+     * delete user
      *
      * @param deleteRequest
      * @param request
@@ -190,7 +190,7 @@ public class UserController {
     }
 
     /**
-     * 更新用户
+     * update user
      *
      * @param userUpdateRequest
      * @param request
@@ -211,7 +211,7 @@ public class UserController {
     }
 
     /**
-     * 根据 id 获取用户（仅管理员）
+     * (admin only) get user by id
      *
      * @param id
      * @param request
@@ -229,7 +229,7 @@ public class UserController {
     }
 
     /**
-     * 根据 id 获取包装类
+     * get wrapper by id
      *
      * @param id
      * @param request
@@ -243,7 +243,7 @@ public class UserController {
     }
 
     /**
-     * 分页获取用户列表（仅管理员）
+     * (admin only) get user list by page
      *
      * @param userQueryRequest
      * @param request
@@ -261,7 +261,7 @@ public class UserController {
     }
 
     /**
-     * 分页获取用户封装列表
+     * get User VO list by page
      *
      * @param userQueryRequest
      * @param request
@@ -275,7 +275,7 @@ public class UserController {
         }
         long current = userQueryRequest.getCurrent();
         long size = userQueryRequest.getPageSize();
-        // 限制爬虫
+        // prevent crawlers
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         Page<User> userPage = userService.page(new Page<>(current, size),
                 userService.getQueryWrapper(userQueryRequest));
