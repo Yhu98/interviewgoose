@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 微信开放平台配置
+ * WeChat public platform config
  *
  * @author Hu
  */
@@ -26,7 +26,7 @@ public class WxOpenConfig {
     private WxMpService wxMpService;
 
     /**
-     * 单例模式（不用 @Bean 是为了防止和公众号的 service 冲突）
+     * Singleton pattern (avoiding @Bean to prevent conflicts with the public account service)
      *
      * @return
      */
