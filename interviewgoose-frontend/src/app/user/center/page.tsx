@@ -54,12 +54,12 @@ export default function UserCenterPage() {
           <Card
             tabList={[
               {
-                key: "record",
-                label: "Browsing Records",
+                key: "co-record",
+                label: "Clock-on Records",
               },
               {
-                key: "others",
-                label: "Others",
+                key: "qv-history",
+                label: "Question Viewing History",
               },
             ]}
             activeTabKey={activeTabKey}
@@ -67,12 +67,12 @@ export default function UserCenterPage() {
               setActiveTabKey(key);
             }}
           >
-            {activeTabKey === "record" && (
+            {activeTabKey === "co-record" && (
               <>
                 <CalendarChart />
               </>
             )}
-            {activeTabKey === "others" && <>bbbbb</>}
+            {activeTabKey === "qv-history" && <>bbbbb</>}
           </Card>
         </Col>
       </Row>
