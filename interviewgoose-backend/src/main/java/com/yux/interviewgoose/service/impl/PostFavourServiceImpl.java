@@ -39,7 +39,7 @@ public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFav
      */
     @Override
     public int doPostFavour(long postId, User loginUser) {
-        // 判断是否存在
+        // check if exist
         Post post = postService.getById(postId);
         if (post == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
