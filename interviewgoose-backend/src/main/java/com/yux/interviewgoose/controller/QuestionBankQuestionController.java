@@ -11,11 +11,14 @@ import com.yux.interviewgoose.common.ResultUtils;
 import com.yux.interviewgoose.constant.UserConstant;
 import com.yux.interviewgoose.exception.BusinessException;
 import com.yux.interviewgoose.exception.ThrowUtils;
+import com.yux.interviewgoose.model.dto.question.QuestionBatchDeleteRequest;
 import com.yux.interviewgoose.model.dto.questionbankquestion.*;
+import com.yux.interviewgoose.model.entity.Question;
 import com.yux.interviewgoose.model.entity.QuestionBankQuestion;
 import com.yux.interviewgoose.model.entity.User;
 import com.yux.interviewgoose.model.vo.QuestionBankQuestionVO;
 import com.yux.interviewgoose.service.QuestionBankQuestionService;
+import com.yux.interviewgoose.service.QuestionService;
 import com.yux.interviewgoose.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -35,6 +38,9 @@ import java.util.List;
 @RequestMapping("/questionBankQuestion")
 @Slf4j
 public class QuestionBankQuestionController {
+
+    @Resource
+    private QuestionService questionService;
 
     @Resource
     private QuestionBankQuestionService questionBankQuestionService;
@@ -242,6 +248,22 @@ public class QuestionBankQuestionController {
         questionBankQuestionService.batchRemoveQuestionsFromBank(questionIdList, questionBankId);
         return ResultUtils.success(true);
     }
+
+    /**
+     * batch delete questions (admin only)
+     * @param questionBatchDeleteRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/delete/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> batchDeleteQuestions(@RequestBody QuestionBatchDeleteRequest questionBatchDeleteRequest,
+                                                      HttpServletRequest request) {
+        ThrowUtils.throwIf(questionBatchDeleteRequest == null, ErrorCode.PARAMS_ERROR);
+        questionService.batchDeleteQuestions(questionBatchDeleteRequest.getQuestionIdList());
+        return ResultUtils.success(true);
+    }
+
 
     // endregion
 }

@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yux.interviewgoose.common.ErrorCode;
 import com.yux.interviewgoose.constant.CommonConstant;
+import com.yux.interviewgoose.exception.BusinessException;
 import com.yux.interviewgoose.exception.ThrowUtils;
 import com.yux.interviewgoose.mapper.QuestionMapper;
 import com.yux.interviewgoose.model.dto.question.QuestionEsDTO;
@@ -36,6 +37,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -359,6 +361,33 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         page.setRecords(resourceList);
         return page;
     }
+
+    /**
+     * batch delete the questions (remove questions associations) (admin only)
+     * @param questionIdList
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchDeleteQuestions(List<Long> questionIdList) {
+        if (CollUtil.isEmpty(questionIdList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Question id list for deletion is empty.");
+        }
+        for (Long questionId : questionIdList) {
+            boolean result = this.removeById(questionId);
+            if (!result) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "Couldn't delete the questions");
+            }
+            // Remove questions associations when these questions are deleted
+            LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper = Wrappers.lambdaQuery(QuestionBankQuestion.class)
+                    .eq(QuestionBankQuestion::getQuestionId, questionId);
+            result = questionBankQuestionService.remove(lambdaQueryWrapper);
+            if (!result) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "Couldn't remove the questions associations");
+            }
+        }
+
+    }
+
 
 }
 

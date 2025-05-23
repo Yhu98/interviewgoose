@@ -12,6 +12,7 @@ import com.yux.interviewgoose.model.vo.QuestionVO;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * Question service
@@ -70,5 +71,11 @@ public interface QuestionService extends IService<Question> {
      * @return
      */
     Page<Question> searchFromEs(QuestionQueryRequest questionQueryRequest);
+
+    /**
+     * batch delete questions from the database
+     * @param questionIdList
+     */
+    void batchDeleteQuestions(List<Long> questionIdList);
 
 }
