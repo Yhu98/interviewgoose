@@ -14,12 +14,13 @@ import {
 } from "@ant-design/icons";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { PageContainer, ProTable } from "@ant-design/pro-components";
-import { Button, message, Space, Typography } from "antd";
+import { Button, message, Popconfirm, Space, Table, Typography } from "antd";
 import React, { useRef, useState } from "react";
 import TagList from "@/components/TagList";
 import MdEditor from "@/components/MdEditor";
-//import { ConfigProvider } from "antd";
-//import en_GB from "antd/lib/locale/en_GB";
+import BatchAddQuestionsToBankModal from "@/app/admin/question/components/BatchAddQuestionsToBankModal";
+import BatchRemoveQuestionsFromBankModal from "@/app/admin/question/components/BatchRemoveQuestionsFromBankModal";
+import { batchDeleteQuestionsUsingPost } from "@/api/questionBankQuestionController";
 
 /**
  * Question Management Page
@@ -27,18 +28,33 @@ import MdEditor from "@/components/MdEditor";
  * @constructor
  */
 const QuestionAdminPage: React.FC = () => {
-  // 是否显示新建窗口
+  // whether create new popup
   const [createModalVisible, setCreateModalVisible] = useState<boolean>(false);
   // whether display update popup
   const [updateModalVisible, setUpdateModalVisible] = useState<boolean>(false);
   // whether display update popup (question bank)
-  const [updateBankModalVisible, setUpdateBankModalVisible] = useState<boolean>(false);
+  const [updateBankModalVisible, setUpdateBankModalVisible] =
+    useState<boolean>(false);
   const actionRef = useRef<ActionType>();
-  // whether display data the current user clicks  onn
+  // whether display data the current user clicks on
   const [currentRow, setCurrentRow] = useState<API.Question>();
+  // whether display popup for batch add questions to bank
+  const [
+    batchAddQuestionsToBankModalVisible,
+    setBatchAddQuestionsToBankModalVisible,
+  ] = useState<boolean>(false);
+  // whether display popup for batch remove questions from bank
+  const [
+    batchRemoveQuestionsFromBankModalVisible,
+    setBatchRemoveQuestionsFromBankModalVisible,
+  ] = useState<boolean>(false);
+  // list of id of current selected questions
+  const [selectedQuestionIdList, setSelectedQuestionIdList] = useState<
+    number[]
+  >([]);
 
   /**
-   * 删除节点
+   * Delete a question (row)
    *
    * @param row
    */
@@ -55,13 +71,32 @@ const QuestionAdminPage: React.FC = () => {
       return true;
     } catch (error: any) {
       hide();
-      message.error("Deletion failed，" + error.message);
+      message.error("Deletion failed. " + error.message);
       return false;
     }
   };
 
   /**
-   * 表格列配置
+   * Batch Delete Questions
+   * @param questionIdList
+   */
+  const handleBatchDelete = async (questionIdList: number[]) => {
+    const hide = message.loading("Deleting");
+    try {
+      await batchDeleteQuestionsUsingPost({
+        questionIdList,
+      });
+      hide();
+      message.success("Deleted");
+      actionRef?.current?.reload();
+    } catch (error: any) {
+      hide();
+      message.error("Deletion failed. " + error.message);
+    }
+  };
+
+  /**
+   * Table Column Config
    */
   const columns: ProColumns<API.Question>[] = [
     {
@@ -202,12 +237,72 @@ const QuestionAdminPage: React.FC = () => {
       <ProTable<API.Question>
         headerTitle={"Question List"}
         actionRef={actionRef}
-        rowKey="key"
         scroll={{
           x: true,
         }}
         search={{
           labelWidth: 120,
+          resetText: "Reset",
+          searchText: "Search",
+        }}
+        rowKey="id"
+        rowSelection={{
+          selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+          defaultSelectedRowKeys: [1],
+        }}
+        tableAlertRender={({
+          selectedRowKeys,
+          selectedRows,
+          onCleanSelected,
+        }) => {
+          console.log(selectedRowKeys, selectedRows);
+          return (
+            <Space size={24}>
+              <span>
+                {selectedRowKeys.length} selected
+                <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
+                  Unselect
+                </a>
+              </span>
+            </Space>
+          );
+        }}
+        tableAlertOptionRender={({ selectedRowKeys }) => {
+          return (
+            <Space size={16}>
+              <Button
+                onClick={() => {
+                  // pop up
+                  setSelectedQuestionIdList(selectedRowKeys as number[]);
+                  setBatchAddQuestionsToBankModalVisible(true);
+                }}
+              >
+                Add Selected Questions to
+              </Button>
+
+              <Button
+                onClick={() => {
+                  // pop up
+                  setSelectedQuestionIdList(selectedRowKeys as number[]);
+                  setBatchRemoveQuestionsFromBankModalVisible(true);
+                }}
+              >
+                Remove Selected Questions from
+              </Button>
+              <Popconfirm
+                title="Confirm Deleting Action"
+                description="Are you sure to delete these selected questions?"
+                onConfirm={() => {
+                  // delete all selected questions from the database
+                  handleBatchDelete(selectedRowKeys as number[]);
+                }}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button danger>Delete Selected Questions</Button>
+              </Popconfirm>
+            </Space>
+          );
         }}
         toolBarRender={() => [
           <Button
@@ -268,6 +363,26 @@ const QuestionAdminPage: React.FC = () => {
         questionId={currentRow?.id}
         onCancel={() => {
           setUpdateBankModalVisible(false);
+        }}
+      />
+      <BatchAddQuestionsToBankModal
+        visible={batchAddQuestionsToBankModalVisible}
+        questionIdList={selectedQuestionIdList}
+        onSubmit={() => {
+          setBatchAddQuestionsToBankModalVisible(false);
+        }}
+        onCancel={() => {
+          setBatchAddQuestionsToBankModalVisible(false);
+        }}
+      />
+      <BatchRemoveQuestionsFromBankModal
+        visible={batchRemoveQuestionsFromBankModalVisible}
+        questionIdList={selectedQuestionIdList}
+        onSubmit={() => {
+          setBatchRemoveQuestionsFromBankModalVisible(false);
+        }}
+        onCancel={() => {
+          setBatchRemoveQuestionsFromBankModalVisible(false);
         }}
       />
     </PageContainer>
