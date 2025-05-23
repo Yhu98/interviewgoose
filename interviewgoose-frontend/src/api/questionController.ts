@@ -17,6 +17,21 @@ export async function addQuestionUsingPost(
   });
 }
 
+/** batchAddQuestionsToBank POST /api/question/add/batch */
+export async function batchAddQuestionsToBankUsingPost(
+  body: API.QuestionBankQuestionBatchAddRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>("/api/question/add/batch", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** deleteQuestion POST /api/question/delete */
 export async function deleteQuestionUsingPost(
   body: API.DeleteRequest,

@@ -32,6 +32,24 @@ export async function deleteQuestionBankQuestionUsingPost(
   });
 }
 
+/** batchDeleteQuestions POST /api/questionBankQuestion/delete/batch */
+export async function batchDeleteQuestionsUsingPost(
+  body: API.QuestionBatchDeleteRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>(
+    "/api/questionBankQuestion/delete/batch",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
 /** getQuestionBankQuestionVOById GET /api/questionBankQuestion/get/vo */
 export async function getQuestionBankQuestionVoByIdUsingGet(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
@@ -117,6 +135,24 @@ export async function removeQuestionBankQuestionUsingPost(
     data: body,
     ...(options || {}),
   });
+}
+
+/** batchRemoveQuestionsFromBank POST /api/questionBankQuestion/remove/batch */
+export async function batchRemoveQuestionsFromBankUsingPost(
+  body: API.QuestionBankQuestionBatchRemoveRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>(
+    "/api/questionBankQuestion/remove/batch",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body,
+      ...(options || {}),
+    }
+  );
 }
 
 /** updateQuestionBankQuestion POST /api/questionBankQuestion/update */
