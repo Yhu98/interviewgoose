@@ -15,6 +15,7 @@ import com.yux.interviewgoose.model.dto.question.QuestionAddRequest;
 import com.yux.interviewgoose.model.dto.question.QuestionEditRequest;
 import com.yux.interviewgoose.model.dto.question.QuestionQueryRequest;
 import com.yux.interviewgoose.model.dto.question.QuestionUpdateRequest;
+import com.yux.interviewgoose.model.dto.questionbankquestion.QuestionBankQuestionBatchAddRequest;
 import com.yux.interviewgoose.model.entity.Question;
 import com.yux.interviewgoose.model.entity.User;
 import com.yux.interviewgoose.model.vo.QuestionVO;
@@ -258,5 +259,19 @@ public class QuestionController {
         return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
     }
 
+    @PostMapping("/add/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> batchAddQuestionsToBank(
+            @RequestBody QuestionBankQuestionBatchAddRequest questionBankQuestionBatchAddRequest,
+            HttpServletRequest request
+    ) {
+        // Prams Verify
+        ThrowUtils.throwIf(questionBankQuestionBatchAddRequest == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        Long questionBankId = questionBankQuestionBatchAddRequest.getQuestionBankId();
+        List<Long> questionIdList = questionBankQuestionBatchAddRequest.getQuestionIdList();
+        questionBankQuestionService.batchAddQuestionsToBank(questionIdList, questionBankId, loginUser);
+        return ResultUtils.success(true);
+    }
     // endregion
 }

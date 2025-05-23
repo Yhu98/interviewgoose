@@ -3,14 +3,14 @@ package com.yux.interviewgoose.exception;
 import com.yux.interviewgoose.common.ErrorCode;
 
 /**
- * 抛异常工具类
+ * Exception Throw Tool
  *
  * @author Hu
  */
 public class ThrowUtils {
 
     /**
-     * 条件成立则抛异常
+     * Throw exception when condition is true
      *
      * @param condition
      * @param runtimeException
@@ -22,7 +22,7 @@ public class ThrowUtils {
     }
 
     /**
-     * 条件成立则抛异常
+     * Throw exception when condition is true
      *
      * @param condition
      * @param errorCode
@@ -32,7 +32,7 @@ public class ThrowUtils {
     }
 
     /**
-     * 条件成立则抛异常
+     * Throw exception when condition is true
      *
      * @param condition
      * @param errorCode

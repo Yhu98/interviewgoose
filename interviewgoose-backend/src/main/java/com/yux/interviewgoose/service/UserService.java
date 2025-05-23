@@ -41,7 +41,7 @@ public interface UserService extends IService<User> {
     LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request);
 
     /**
-     * 用户登录（微信开放平台）
+     * user login (wechat public platform)
      *
      * @param wxOAuth2UserInfo 从微信获取的用户信息
      * @param request

@@ -12,11 +12,11 @@ import cn.hutool.core.collection.CollUtil;
 import org.springframework.boot.CommandLineRunner;
 
 /**
- * 全量同步帖子到 es
+ * All Post Sync to es
  *
  * @author Hu
  */
-// todo 取消注释开启任务
+// todo uncomment to start the job
 //@Component
 @Slf4j
 public class FullSyncPostToEs implements CommandLineRunner {
