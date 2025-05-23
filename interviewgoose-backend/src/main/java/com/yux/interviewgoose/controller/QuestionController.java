@@ -249,6 +249,12 @@ public class QuestionController {
         return ResultUtils.success(true);
     }
 
+    /**
+     * Search related question VO (elasticsearch)
+     * @param questionQueryRequest
+     * @param request
+     * @return
+     */
     @PostMapping("/search/page/vo")
     public BaseResponse<Page<QuestionVO>> searchQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
                                                                  HttpServletRequest request) {
@@ -259,6 +265,12 @@ public class QuestionController {
         return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
     }
 
+    /**
+     * batch add questions associations to question bank (admin only)
+     * @param questionBankQuestionBatchAddRequest
+     * @param request
+     * @return
+     */
     @PostMapping("/add/batch")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> batchAddQuestionsToBank(
