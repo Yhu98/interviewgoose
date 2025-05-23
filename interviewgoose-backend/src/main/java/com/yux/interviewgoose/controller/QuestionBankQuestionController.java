@@ -11,10 +11,7 @@ import com.yux.interviewgoose.common.ResultUtils;
 import com.yux.interviewgoose.constant.UserConstant;
 import com.yux.interviewgoose.exception.BusinessException;
 import com.yux.interviewgoose.exception.ThrowUtils;
-import com.yux.interviewgoose.model.dto.questionbankquestion.QuestionBankQuestionAddRequest;
-import com.yux.interviewgoose.model.dto.questionbankquestion.QuestionBankQuestionQueryRequest;
-import com.yux.interviewgoose.model.dto.questionbankquestion.QuestionBankQuestionRemoveRequest;
-import com.yux.interviewgoose.model.dto.questionbankquestion.QuestionBankQuestionUpdateRequest;
+import com.yux.interviewgoose.model.dto.questionbankquestion.*;
 import com.yux.interviewgoose.model.entity.QuestionBankQuestion;
 import com.yux.interviewgoose.model.entity.User;
 import com.yux.interviewgoose.model.vo.QuestionBankQuestionVO;
@@ -26,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * Question Bank Question interface
@@ -223,6 +221,26 @@ public class QuestionBankQuestionController {
                 questionBankQuestionService.getQueryWrapper(questionBankQuestionQueryRequest));
         // return wrapper
         return ResultUtils.success(questionBankQuestionService.getQuestionBankQuestionVOPage(questionBankQuestionPage, request));
+    }
+
+    /**
+     * batch remove questions associations from question bank (admin only)
+     * @param questionBankQuestionBatchRemoveRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/remove/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> batchRemoveQuestionsFromBank(
+            @RequestBody QuestionBankQuestionBatchRemoveRequest questionBankQuestionBatchRemoveRequest,
+            HttpServletRequest request
+    ) {
+        // Prams Verify
+        ThrowUtils.throwIf(questionBankQuestionBatchRemoveRequest == null, ErrorCode.PARAMS_ERROR);
+        Long questionBankId = questionBankQuestionBatchRemoveRequest.getQuestionBankId();
+        List<Long> questionIdList = questionBankQuestionBatchRemoveRequest.getQuestionIdList();
+        questionBankQuestionService.batchRemoveQuestionsFromBank(questionIdList, questionBankId);
+        return ResultUtils.success(true);
     }
 
     // endregion

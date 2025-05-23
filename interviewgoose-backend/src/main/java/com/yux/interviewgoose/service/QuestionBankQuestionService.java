@@ -54,10 +54,19 @@ public interface QuestionBankQuestionService extends IService<QuestionBankQuesti
     Page<QuestionBankQuestionVO> getQuestionBankQuestionVOPage(Page<QuestionBankQuestion> questionBankQuestionPage, HttpServletRequest request);
 
     /**
-     *
+     * batch add questions to bank (admin only)
      * @param questionIdList
      * @param questionBankId
      * @param loginUser
      */
     void batchAddQuestionsToBank(List<Long> questionIdList, Long questionBankId, User loginUser);
+
+    /**
+     * batch remove questions to bank (admin only)
+     * @param questionIdList
+     * @param questionBankId
+     */
+    void batchRemoveQuestionsFromBank(List<Long> questionIdList, Long questionBankId);
+
+
 }
