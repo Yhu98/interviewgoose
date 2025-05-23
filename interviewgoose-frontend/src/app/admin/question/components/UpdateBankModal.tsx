@@ -25,7 +25,7 @@ const UpdateBankModal: React.FC<Props> = (props) => {
       API.QuestionBankVO[]
   >([]);
 
-  // 获取所属题库列表
+  // Get current question bank id list
   const getCurrentQuestionBankIdList = async () => {
     try {
       const res = await listQuestionBankQuestionVoByPageUsingPost({
@@ -46,9 +46,9 @@ const UpdateBankModal: React.FC<Props> = (props) => {
     }
   }, [questionId]);
 
-  // 获取题库列表
+  // Get Question Bank List
   const getQuestionBankList = async () => {
-    // 题库数量不多，直接全量获取
+    // Get ALL if the number of topics is small
     const pageSize = 200;
 
     try {
