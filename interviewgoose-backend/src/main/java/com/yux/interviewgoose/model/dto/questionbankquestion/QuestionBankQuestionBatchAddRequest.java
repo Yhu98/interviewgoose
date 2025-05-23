@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * create Question Bank Question request
+ * Batch add questions associations to question bank request
  *
  * @author Hu
  *

@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
-
+ * Batch remove questions associations from question bank request
  * @author Yuxuan
  * @version 1.0
  * @date 2025/5/20
