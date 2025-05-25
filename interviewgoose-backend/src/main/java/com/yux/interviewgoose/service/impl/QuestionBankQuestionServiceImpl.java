@@ -34,9 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -202,12 +201,14 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         ThrowUtils.throwIf(CollUtil.isEmpty(questionIdList), ErrorCode.PARAMS_ERROR, "Question List is Empty");
         ThrowUtils.throwIf(questionBankId == null || questionBankId <= 0, ErrorCode.PARAMS_ERROR, "Invalid Question Bank");
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR);
-        // Verify question id
-        List<Question> questionList = questionService.listByIds(questionIdList);
+        // Verify if question id exists
+        // Optimise SQL - query only the field needed [id]
+        LambdaQueryWrapper<Question> questionLambdaQueryWrapper = Wrappers.lambdaQuery(Question.class)
+                .select(Question::getId)
+                .in(Question::getId, questionIdList);
         // Valid question id
-        List<Long> validQuestionIdList = questionList.stream()
-                .map(Question::getId)
-                .collect(Collectors.toList());
+        List<Long> validQuestionIdList = questionService.listObjs(questionLambdaQueryWrapper, obj -> (Long) obj);
+        ThrowUtils.throwIf(CollUtil.isEmpty(validQuestionIdList), ErrorCode.PARAMS_ERROR, "Valid Question Id List is Empty.");
         // Filter questions not associated with the question bank (topic) - avoid duplicate insert
         LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper = Wrappers.lambdaQuery(QuestionBankQuestion.class)
                 .eq(QuestionBankQuestion::getQuestionBankId, questionBankId)
@@ -220,6 +221,19 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         // Verify question bank id
         QuestionBank questionBank = questionBankService.getById(questionBankId);
         ThrowUtils.throwIf(questionBank == null, ErrorCode.NOT_FOUND_ERROR, "Question bank does not exist");
+
+        // Customise Thread Pool
+        ThreadPoolExecutor customExecutor = new ThreadPoolExecutor(
+                20, // Core Thread Pool NUmber
+                50, // Maximum Thread Pool Number
+                60L, // Thread Idle Time
+                TimeUnit.SECONDS,    // Idle Time Unit
+                new LinkedBlockingQueue<>(10000),   // Thread Pool Queue
+                new ThreadPoolExecutor.CallerRunsPolicy()   // Rejection Policy: Caller Runs Policy
+        );
+        // Secure all batches of inserts
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
         // Execute insert
         // process data in batches, with a default batch size of 1,000 records
         // avoid long-running transactions
@@ -239,8 +253,20 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
             // Process each batch of data using a transaction
             //
             QuestionBankQuestionService questionBankQuestionService = (QuestionBankQuestionServiceImpl) AopContext.currentProxy();
-            questionBankQuestionService.batchAddQuestionsToBankInner(questionBankQuestions);
+            // Add to thread pool
+            CompletableFuture.runAsync(()->{
+                questionBankQuestionService.batchAddQuestionsToBankInner(questionBankQuestions);
+            }, customExecutor).exceptionally(ex -> {
+                log.error("Failed to add questions to the question bank: {}", ex.getMessage());
+                return null;
+            }).thenRun(() -> {
+                log.info("Successfully added questions to the question bank.");
+            });
         }
+        // Wait for all threads to complete
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        // Close the thread pool
+        customExecutor.shutdown();
     }
 
     /**
