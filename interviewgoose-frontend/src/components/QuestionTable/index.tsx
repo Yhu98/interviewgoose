@@ -61,9 +61,7 @@ const QuestionTable: React.FC = (props: Props) => {
         mode: "tags",
         placeholder: "Select tags",
       },
-      render: (_, record) => {
-        return <TagList tagList={record.tagList} />;
-      },
+      render: (_, record) => <TagList tagList={record.tagList} />,
     },
   ];
 
@@ -84,7 +82,7 @@ const QuestionTable: React.FC = (props: Props) => {
         pagination={
           {
             pageSize: 12,
-            showTotal: (total) => `${total} Questions in Total`,
+            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} total questions`,
             showSizeChanger: false,
             total,
           } as TablePaginationConfig

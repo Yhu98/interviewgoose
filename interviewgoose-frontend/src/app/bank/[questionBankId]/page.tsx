@@ -53,7 +53,7 @@ export default async function BankPage({ params }) {
                 target="_blank"
                 disabled={!firstQuestionId}
               >
-                Start Answering
+                Start Viewing
               </Button>
             </>
           }

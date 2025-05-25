@@ -19,11 +19,11 @@ const handleAdd = async (fields: API.QuestionBankAddRequest) => {
   try {
     await addQuestionBankUsingPost(fields);
     hide();
-    message.success("New question bank added");
+    message.success("New question bank (topic) added");
     return true;
   } catch (error: any) {
     hide();
-    message.error("Couldn't add new question bank，" + error.message);
+    message.error("Couldn't add new question bank (topic)." + error.message);
     return false;
   }
 };
@@ -39,7 +39,7 @@ const CreateModal: React.FC<Props> = (props) => {
   return (
     <Modal
       destroyOnClose
-      title={'New QuestionBank'}
+      title={'New Question Bank (Topic)'}
       open={visible}
       footer={null}
       onCancel={() => {

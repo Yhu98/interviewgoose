@@ -53,20 +53,23 @@ const QuestionBankAdminPage: React.FC = () => {
    */
   const columns: ProColumns<API.QuestionBank>[] = [
     {
-      title: "id",
+      title: "ID",
       dataIndex: "id",
       valueType: "text",
       hideInForm: true,
+      fieldProps: { placeholder: "Search by topic id" },
     },
     {
       title: "Title",
       dataIndex: "title",
       valueType: "text",
+      fieldProps: { placeholder: "Search by topic title" },
     },
     {
       title: "Description",
       dataIndex: "description",
       valueType: "text",
+      fieldProps: { placeholder: "Search by topic description" },
     },
     {
       title: "Picture",
@@ -74,11 +77,12 @@ const QuestionBankAdminPage: React.FC = () => {
       valueType: "image",
       fieldProps: {
         width: 64,
+        placeholder: "Search by topic picture",
       },
       hideInSearch: true,
     },
     {
-      title: "When Created",
+      title: "Create Time",
       sorter: true,
       dataIndex: "createTime",
       valueType: "dateTime",
@@ -86,7 +90,7 @@ const QuestionBankAdminPage: React.FC = () => {
       hideInForm: true,
     },
     {
-      title: "When Edited",
+      title: "Latest Edit",
       sorter: true,
       dataIndex: "editTime",
       valueType: "dateTime",
@@ -130,6 +134,14 @@ const QuestionBankAdminPage: React.FC = () => {
         rowKey="key"
         search={{
           labelWidth: 120,
+          resetText: "Reset ",
+          searchText: "Search",
+        }}
+        pagination={{
+          pageSize: 10,
+          showTotal: (total, range) => (
+              <div>{`Showing ${range[0]}-${range[1]} of ${total} total topics`}</div>
+          ),
         }}
         toolBarRender={() => [
           <Button

@@ -57,16 +57,19 @@ const UserAdminPage: React.FC = () => {
       dataIndex: "id",
       valueType: "text",
       hideInForm: true,
+      fieldProps: { placeholder: "Search by id" },
     },
     {
       title: "Account",
       dataIndex: "userAccount",
       valueType: "text",
+      fieldProps: { placeholder: "Search by account name" },
     },
     {
       title: "Alias",
       dataIndex: "userName",
       valueType: "text",
+      fieldProps: { placeholder: "Search by alias" },
     },
     {
       title: "Avatar",
@@ -81,6 +84,7 @@ const UserAdminPage: React.FC = () => {
       title: "Description",
       dataIndex: "userProfile",
       valueType: "textarea",
+      hideInSearch: true,
     },
     {
       title: "Access Level",
@@ -139,6 +143,14 @@ const UserAdminPage: React.FC = () => {
         rowKey="key"
         search={{
           labelWidth: 120,
+          resetText: "Reset ",
+          searchText: "Search",
+        }}
+        pagination={{
+          pageSize: 10,
+          showTotal: (total, range) => (
+              <div>{`Showing ${range[0]}-${range[1]} of ${total} total users`}</div>
+          ),
         }}
         toolBarRender={() => [
           <Button

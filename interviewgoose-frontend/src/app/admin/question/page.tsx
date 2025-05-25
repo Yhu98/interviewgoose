@@ -100,7 +100,7 @@ const QuestionAdminPage: React.FC = () => {
    */
   const columns: ProColumns<API.Question>[] = [
     {
-      title: "id",
+      title: "ID",
       dataIndex: "id",
       valueType: "text",
       hideInForm: true,
@@ -172,14 +172,14 @@ const QuestionAdminPage: React.FC = () => {
       hideInForm: true,
     },
     {
-      title: "Who Created",
+      title: "Creator",
       dataIndex: "userId",
       valueType: "text",
       hideInForm: true,
     },
 
     {
-      title: "When Created",
+      title: "Create Time",
       sorter: true,
       dataIndex: "createTime",
       valueType: "dateTime",
@@ -188,7 +188,7 @@ const QuestionAdminPage: React.FC = () => {
       fieldProps: { placeholder: "Search by poster" },
     },
     {
-      title: "When Edited",
+      title: "Latest Edit",
       sorter: true,
       dataIndex: "editTime",
       valueType: "dateTime",
@@ -250,12 +250,17 @@ const QuestionAdminPage: React.FC = () => {
           selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
           defaultSelectedRowKeys: [1],
         }}
+        pagination={{
+          pageSize: 12,
+          showTotal: (total, range) => (
+              <div>{`Showing ${range[0]}-${range[1]} of ${total} total questions`}</div>
+          ),
+        }}
         tableAlertRender={({
           selectedRowKeys,
           selectedRows,
           onCleanSelected,
         }) => {
-          console.log(selectedRowKeys, selectedRows);
           return (
             <Space size={24}>
               <span>
