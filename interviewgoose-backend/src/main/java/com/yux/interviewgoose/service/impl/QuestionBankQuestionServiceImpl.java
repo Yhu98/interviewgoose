@@ -25,6 +25,7 @@ import com.yux.interviewgoose.service.UserService;
 import com.yux.interviewgoose.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -220,30 +221,50 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         QuestionBank questionBank = questionBankService.getById(questionBankId);
         ThrowUtils.throwIf(questionBank == null, ErrorCode.NOT_FOUND_ERROR, "Question bank does not exist");
         // Execute insert
-        for (Long questionId : validQuestionIdList) {
-            QuestionBankQuestion questionBankQuestion = new QuestionBankQuestion();
-            questionBankQuestion.setQuestionBankId(questionBankId);
-            questionBankQuestion.setQuestionId(questionId);
-            questionBankQuestion.setUserId(loginUser.getId());
-            try {
-                boolean result = this.save(questionBankQuestion);
-                if (!result) {
-                    throw new BusinessException(ErrorCode.OPERATION_ERROR, "Couldn't add questions to the question bank");
-                }
-            } catch (DataIntegrityViolationException e) {
-                log.error("Database unique key conflict or violation of other integrity constraints. question id: {}, question bank id: {}, error message: {}",
-                        questionId, questionBankId, e.getMessage());
-                throw new BusinessException(ErrorCode.OPERATION_ERROR, "The question is already associated with the question bank. Duplicate not allowed.");
-            } catch (DataAccessException e) {
-                log.error("Operation failed due to database connection issues, transaction problems, or similar errors. question id: {}, question bank id: {}, error message: {}",
-                        questionId, questionBankId, e.getMessage());
-                throw new BusinessException(ErrorCode.OPERATION_ERROR, "Database operation failed.");
-            } catch (Exception e) {
-                // Catch other exception with a general handle
-                log.error("An unknown error occurred while adding questions to the question bank. question id: {}, question bank id: {}, error message: {}",
-                        questionId, questionBankId, e.getMessage());
+        // process data in batches, with a default batch size of 1,000 records
+        // avoid long-running transactions
+        int batchSize = 1000;
+        int totalQuestionListSize = validQuestionIdList.size();
+        for (int i = 0; i < totalQuestionListSize; i++) {
+            // generate every batch
+            List<Long> sublist = validQuestionIdList.subList(i, Math.min(i + batchSize, totalQuestionListSize));
+            List<QuestionBankQuestion> questionBankQuestions = sublist.stream()
+                    .map(questionId -> {
+                        QuestionBankQuestion questionBankQuestion = new QuestionBankQuestion();
+                        questionBankQuestion.setQuestionBankId(questionBankId);
+                        questionBankQuestion.setQuestionId(questionId);
+                        questionBankQuestion.setUserId(loginUser.getId());
+                        return questionBankQuestion;
+                    }).collect(Collectors.toList());
+            // Process each batch of data using a transaction
+            //
+            QuestionBankQuestionService questionBankQuestionService = (QuestionBankQuestionServiceImpl) AopContext.currentProxy();
+            questionBankQuestionService.batchAddQuestionsToBankInner(questionBankQuestions);
+        }
+    }
+
+    /**
+     * add question associations to question bank by batches (transaction, only for inner use)
+     * @param questionBankQuestions
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchAddQuestionsToBankInner(List<QuestionBankQuestion> questionBankQuestions) {
+        try {
+            boolean result = this.saveBatch(questionBankQuestions);
+            if (!result) {
                 throw new BusinessException(ErrorCode.OPERATION_ERROR, "Couldn't add questions to the question bank");
             }
+        } catch (DataIntegrityViolationException e) {
+            log.error("Database unique key conflict or violation of other integrity constraints. {}", e.getMessage());
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "The question is already associated with the question bank. Duplicate not allowed.");
+        } catch (DataAccessException e) {
+            log.error("Operation failed due to database connection issues, transaction problems, or similar errors. {}", e.getMessage());
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "Database operation failed.");
+        } catch (Exception e) {
+            // Catch other exception with a general handle
+            log.error("An unknown error occurred while adding questions to the question bank. {}", e.getMessage());
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "Couldn't add questions to the question bank");
         }
     }
 

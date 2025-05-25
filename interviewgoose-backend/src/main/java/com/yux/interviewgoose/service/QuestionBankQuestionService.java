@@ -7,6 +7,7 @@ import com.yux.interviewgoose.model.dto.questionbankquestion.QuestionBankQuestio
 import com.yux.interviewgoose.model.entity.QuestionBankQuestion;
 import com.yux.interviewgoose.model.entity.User;
 import com.yux.interviewgoose.model.vo.QuestionBankQuestionVO;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -67,6 +68,13 @@ public interface QuestionBankQuestionService extends IService<QuestionBankQuesti
      * @param questionBankId
      */
     void batchRemoveQuestionsFromBank(List<Long> questionIdList, Long questionBankId);
+
+    /**
+     * add question associations to question bank by batches (transaction, only for inner use)
+     * @param questionBankQuestions
+     */
+    @Transactional(rollbackFor = Exception.class)
+    void batchAddQuestionsToBankInner(List<QuestionBankQuestion> questionBankQuestions);
 
 
 }
