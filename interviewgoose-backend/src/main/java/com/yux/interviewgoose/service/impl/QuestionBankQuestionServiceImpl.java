@@ -25,8 +25,9 @@ import com.yux.interviewgoose.service.UserService;
 import com.yux.interviewgoose.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +42,6 @@ import java.util.stream.Collectors;
  * Question Bank Question service implementation
  *
  * @author Hu
- *
  */
 @Service
 @Slf4j
@@ -61,7 +61,7 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
      * data validation
      *
      * @param questionBankQuestion
-     * @param add      validate the data created
+     * @param add                  validate the data created
      */
     @Override
     public void validQuestionBankQuestion(QuestionBankQuestion questionBankQuestion, boolean add) {
@@ -112,8 +112,6 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         String sortField = questionBankQuestionQueryRequest.getSortField();
         String sortOrder = questionBankQuestionQueryRequest.getSortOrder();
         Long userId = questionBankQuestionQueryRequest.getUserId();
-
-
 
         // todo 补充需要的查询条件
         // 精确查询
@@ -201,7 +199,7 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
     public void batchAddQuestionsToBank(List<Long> questionIdList, Long questionBankId, User loginUser) {
         // Param verify
         ThrowUtils.throwIf(CollUtil.isEmpty(questionIdList), ErrorCode.PARAMS_ERROR, "Question List is Empty");
-        ThrowUtils.throwIf( questionBankId == null || questionBankId <= 0, ErrorCode.PARAMS_ERROR, "Invalid Question Bank");
+        ThrowUtils.throwIf(questionBankId == null || questionBankId <= 0, ErrorCode.PARAMS_ERROR, "Invalid Question Bank");
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR);
         // Verify question id
         List<Question> questionList = questionService.listByIds(questionIdList);
@@ -209,7 +207,15 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         List<Long> validQuestionIdList = questionList.stream()
                 .map(Question::getId)
                 .collect(Collectors.toList());
-        ThrowUtils.throwIf(CollUtil.isEmpty(validQuestionIdList), ErrorCode.PARAMS_ERROR, "Valid Question List is Empty");
+        // Filter questions not associated with the question bank (topic) - avoid duplicate insert
+        LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper = Wrappers.lambdaQuery(QuestionBankQuestion.class)
+                .eq(QuestionBankQuestion::getQuestionBankId, questionBankId)
+                .notIn(QuestionBankQuestion::getQuestionId, validQuestionIdList);
+        List<QuestionBankQuestion> notAssociatedQuestionList = this.list(lambdaQueryWrapper);
+        validQuestionIdList = notAssociatedQuestionList.stream()
+                .map(QuestionBankQuestion::getId)
+                .collect(Collectors.toList());
+        ThrowUtils.throwIf(CollUtil.isEmpty(validQuestionIdList), ErrorCode.PARAMS_ERROR, "Selected questions are all associated with the topic. ");
         // Verify question bank id
         QuestionBank questionBank = questionBankService.getById(questionBankId);
         ThrowUtils.throwIf(questionBank == null, ErrorCode.NOT_FOUND_ERROR, "Question bank does not exist");
@@ -219,8 +225,23 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
             questionBankQuestion.setQuestionBankId(questionBankId);
             questionBankQuestion.setQuestionId(questionId);
             questionBankQuestion.setUserId(loginUser.getId());
-            boolean result = this.save(questionBankQuestion);
-            if (!result) {
+            try {
+                boolean result = this.save(questionBankQuestion);
+                if (!result) {
+                    throw new BusinessException(ErrorCode.OPERATION_ERROR, "Couldn't add questions to the question bank");
+                }
+            } catch (DataIntegrityViolationException e) {
+                log.error("Database unique key conflict or violation of other integrity constraints. question id: {}, question bank id: {}, error message: {}",
+                        questionId, questionBankId, e.getMessage());
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "The question is already associated with the question bank. Duplicate not allowed.");
+            } catch (DataAccessException e) {
+                log.error("Operation failed due to database connection issues, transaction problems, or similar errors. question id: {}, question bank id: {}, error message: {}",
+                        questionId, questionBankId, e.getMessage());
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "Database operation failed.");
+            } catch (Exception e) {
+                // Catch other exception with a general handle
+                log.error("An unknown error occurred while adding questions to the question bank. question id: {}, question bank id: {}, error message: {}",
+                        questionId, questionBankId, e.getMessage());
                 throw new BusinessException(ErrorCode.OPERATION_ERROR, "Couldn't add questions to the question bank");
             }
         }
@@ -231,7 +252,7 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
     public void batchRemoveQuestionsFromBank(List<Long> questionIdList, Long questionBankId) {
         // Param verify
         ThrowUtils.throwIf(CollUtil.isEmpty(questionIdList), ErrorCode.PARAMS_ERROR, "Question List is Empty");
-        ThrowUtils.throwIf( questionBankId == null || questionBankId <= 0, ErrorCode.PARAMS_ERROR, "Invalid Question Bank");
+        ThrowUtils.throwIf(questionBankId == null || questionBankId <= 0, ErrorCode.PARAMS_ERROR, "Invalid Question Bank");
         // Execute deleting association
         for (Long questionId : questionIdList) {
             // construct query condition using MyBatis-Plus's LambdaQueryWrapper
@@ -244,7 +265,6 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
             }
         }
     }
-
 
 
 }
