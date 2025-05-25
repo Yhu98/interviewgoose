@@ -209,14 +209,18 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         // Valid question id
         List<Long> validQuestionIdList = questionService.listObjs(questionLambdaQueryWrapper, obj -> (Long) obj);
         ThrowUtils.throwIf(CollUtil.isEmpty(validQuestionIdList), ErrorCode.PARAMS_ERROR, "Valid Question Id List is Empty.");
-        // Filter questions not associated with the question bank (topic) - avoid duplicate insert
+        // Filter questions already associated with the target question bank (topic) - avoid duplicate insert
         LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper = Wrappers.lambdaQuery(QuestionBankQuestion.class)
                 .eq(QuestionBankQuestion::getQuestionBankId, questionBankId)
-                .notIn(QuestionBankQuestion::getQuestionId, validQuestionIdList);
-        List<QuestionBankQuestion> notAssociatedQuestionList = this.list(lambdaQueryWrapper);
-        validQuestionIdList = notAssociatedQuestionList.stream()
+                .in(QuestionBankQuestion::getQuestionId, validQuestionIdList);
+        List<QuestionBankQuestion> associatedQuestionList = this.list(lambdaQueryWrapper);
+        // (Set) question ids already associated with the target question bank (topic)
+        Set<Long> associatedQuestionIdSet = associatedQuestionList.stream()
                 .map(QuestionBankQuestion::getId)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
+        validQuestionIdList = validQuestionIdList.stream().filter(questionId -> {
+            return !associatedQuestionIdSet.contains(questionId);
+        }).collect(Collectors.toList());
         ThrowUtils.throwIf(CollUtil.isEmpty(validQuestionIdList), ErrorCode.PARAMS_ERROR, "Selected questions are all associated with the topic. ");
         // Verify question bank id
         QuestionBank questionBank = questionBankService.getById(questionBankId);
@@ -239,7 +243,7 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         // avoid long-running transactions
         int batchSize = 1000;
         int totalQuestionListSize = validQuestionIdList.size();
-        for (int i = 0; i < totalQuestionListSize; i++) {
+        for (int i = 0; i < totalQuestionListSize; i+=batchSize) {
             // generate every batch
             List<Long> sublist = validQuestionIdList.subList(i, Math.min(i + batchSize, totalQuestionListSize));
             List<QuestionBankQuestion> questionBankQuestions = sublist.stream()
