@@ -216,7 +216,7 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         List<QuestionBankQuestion> associatedQuestionList = this.list(lambdaQueryWrapper);
         // (Set) question ids already associated with the target question bank (topic)
         Set<Long> associatedQuestionIdSet = associatedQuestionList.stream()
-                .map(QuestionBankQuestion::getId)
+                .map(QuestionBankQuestion::getQuestionId)
                 .collect(Collectors.toSet());
         validQuestionIdList = validQuestionIdList.stream().filter(questionId -> {
             return !associatedQuestionIdSet.contains(questionId);
