@@ -2,6 +2,12 @@ package com.yux.interviewgoose.controller;
 
 
 import cn.hutool.json.JSONUtil;
+import com.alibaba.csp.sentinel.Entry;
+import com.alibaba.csp.sentinel.EntryType;
+import com.alibaba.csp.sentinel.SphU;
+import com.alibaba.csp.sentinel.Tracer;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yux.interviewgoose.annotation.AuthCheck;
 import com.yux.interviewgoose.common.BaseResponse;
@@ -15,14 +21,17 @@ import com.yux.interviewgoose.model.dto.question.QuestionAddRequest;
 import com.yux.interviewgoose.model.dto.question.QuestionEditRequest;
 import com.yux.interviewgoose.model.dto.question.QuestionQueryRequest;
 import com.yux.interviewgoose.model.dto.question.QuestionUpdateRequest;
+import com.yux.interviewgoose.model.dto.questionbank.QuestionBankQueryRequest;
 import com.yux.interviewgoose.model.dto.questionbankquestion.QuestionBankQuestionBatchAddRequest;
 import com.yux.interviewgoose.model.entity.Question;
 import com.yux.interviewgoose.model.entity.User;
+import com.yux.interviewgoose.model.vo.QuestionBankVO;
 import com.yux.interviewgoose.model.vo.QuestionVO;
 import com.yux.interviewgoose.service.QuestionBankQuestionService;
 import com.yux.interviewgoose.service.QuestionService;
 import com.yux.interviewgoose.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.tools.Trace;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -171,7 +180,7 @@ public class QuestionController {
     }
 
     /**
-     * get Question list in pages (Class)
+     * get question list in pages (Class)
      *
      * @param questionQueryRequest
      * @param request
@@ -180,6 +189,7 @@ public class QuestionController {
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<QuestionVO>> listQuestionVOByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
                                                                HttpServletRequest request) {
+        ThrowUtils.throwIf(questionQueryRequest == null, ErrorCode.PARAMS_ERROR);
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
         // prevent abuse by crawlers
@@ -189,6 +199,59 @@ public class QuestionController {
                 questionService.getQueryWrapper(questionQueryRequest));
         // return wrapper
         return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
+    }
+
+    /**
+     * get question list in pages (Class) (Rate Limiter)
+     *
+     * @param questionQueryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/list/page/vo/sentinel")
+    public BaseResponse<Page<QuestionVO>> listQuestionVOByPageSentinel(@RequestBody QuestionQueryRequest questionQueryRequest,
+                                                                       HttpServletRequest request) {
+        ThrowUtils.throwIf(questionQueryRequest == null, ErrorCode.PARAMS_ERROR);
+        long current = questionQueryRequest.getCurrent();
+        long size = questionQueryRequest.getPageSize();
+        // prevent abuse by crawlers
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        // rate limiter based on IPs
+        String remoteAddr = request.getRemoteAddr();
+        Entry entry = null;
+        try  {
+            entry = SphU.entry("listQuestionVOByPage", EntryType.IN, 1, remoteAddr);
+            // protected business logic
+            // query database
+            Page<Question> questionPage = questionService.listQuestionByPage(questionQueryRequest);
+            // get wrapper class
+            return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
+        } catch (Throwable t) {
+            // Business exception
+            if (!BlockException.isBlockException(t)) {
+                Tracer.trace(t);
+                return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "System errors.");
+            }
+            // resource access blocked, degraded
+            if (t instanceof DegradeException) {
+                return handleFallback(questionQueryRequest, request, t);
+            }
+            // rate limiting operation
+            return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "Access too frequent, please try again later");
+        } finally {
+            if (entry != null) {
+                entry.exit(1, remoteAddr);
+            }
+        }
+    }
+
+    /**
+     * listQuestionBankVOByPage fallback operations
+     */
+    public BaseResponse<Page<QuestionVO>> handleFallback(@RequestBody QuestionQueryRequest questionQueryRequest,
+                                                             HttpServletRequest request, Throwable ex) {
+        // return local data or null
+        return ResultUtils.success(null);
     }
 
     /**
