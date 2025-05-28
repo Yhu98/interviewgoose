@@ -1,5 +1,8 @@
 package com.yux.interviewgoose.controller;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yux.interviewgoose.annotation.AuthCheck;
 import com.yux.interviewgoose.common.BaseResponse;
@@ -34,7 +37,6 @@ import javax.servlet.http.HttpServletRequest;
  * Question Bank interface
  *
  * @author Hu
- *
  */
 @RestController
 @RequestMapping("/questionBank")
@@ -190,8 +192,11 @@ public class QuestionBankController {
      * @return
      */
     @PostMapping("/list/page/vo")
+    @SentinelResource(value = "listQuestionBankVOByPage",
+            blockHandler = "handleBlockException",
+            fallback = "handleFallback")
     public BaseResponse<Page<QuestionBankVO>> listQuestionBankVOByPage(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
-                                                               HttpServletRequest request) {
+                                                                       HttpServletRequest request) {
         long current = questionBankQueryRequest.getCurrent();
         long size = questionBankQueryRequest.getPageSize();
         // Limit crawlers
@@ -205,6 +210,29 @@ public class QuestionBankController {
     }
 
     /**
+     * listQuestionBankVOByPage rate limit operations
+     */
+    public BaseResponse<Page<QuestionBankVO>> handleBlockException(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
+                                                                       HttpServletRequest request, BlockException ex) {
+        if (ex instanceof DegradeException) {
+            return handleFallback(questionBankQueryRequest, request, ex);
+        }
+        // rate limiter
+        return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "System overloading, please wait with patience.");
+    }
+
+    /**
+     * listQuestionBankVOByPage fallback operations
+     */
+    public BaseResponse<Page<QuestionBankVO>> handleFallback(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
+                                                                       HttpServletRequest request, Throwable ex) {
+        // return local data or null
+        return ResultUtils.success(null);
+    }
+
+
+
+    /**
      * get the list of Question Bank created by current logged-in user in pages
      *
      * @param questionBankQueryRequest
@@ -213,7 +241,7 @@ public class QuestionBankController {
      */
     @PostMapping("/my/list/page/vo")
     public BaseResponse<Page<QuestionBankVO>> listMyQuestionBankVOByPage(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
-                                                                 HttpServletRequest request) {
+                                                                         HttpServletRequest request) {
         ThrowUtils.throwIf(questionBankQueryRequest == null, ErrorCode.PARAMS_ERROR);
         // only query data of currently logged-in user
         User loginUser = userService.getLoginUser(request);
