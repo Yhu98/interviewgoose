@@ -145,6 +145,27 @@ nacos:
     type: yaml  # doc format
     auto-refresh: true # activate auto-refresh
 
+# Sa-Token Configuration
+sa-token:
+  # token name (cookie name)
+  token-name: intgerviewgoose
+  # token expiry (seconds) (30 days by default) (-1 means never expire)
+  timeout: 2592000
+  # minimum token activity frequency (seconds),
+  # if token hasn't accessed the system for longer than this time it will be frozen,
+  # default -1 means no limit, never freeze
+  active-timeout: -1
+  # whether to allow the same account to login from multiple locations simultaneously
+  # (true allows concurrent login, false means new login kicks out old login)
+  is-concurrent: false
+  # when multiple people login to the same account, whether to share one token
+  # (true means all logins share one token, false means create a new token for each login)
+  is-share: true
+  # token style (default token value: uuid, simple-uuid, random-32, random-64, random-128, tik)
+  token-style: uuid
+  # whether to output operation logs
+  is-log: true
+
 
 # Wechat
 wx:
