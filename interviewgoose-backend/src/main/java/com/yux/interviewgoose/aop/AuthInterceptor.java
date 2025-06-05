@@ -18,12 +18,12 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * 权限校验 AOP
+ * Authentication Interceptor AOP
  *
  * @author Hu
  */
-@Aspect
-@Component
+//@Aspect
+//@Component
 public class AuthInterceptor {
 
     @Resource
