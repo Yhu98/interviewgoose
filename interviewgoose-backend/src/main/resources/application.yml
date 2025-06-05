@@ -94,11 +94,27 @@ spring:
 
   # Redis Config
   redis:
+    # Redis database index (0 by default)
     database: 1
     host: localhost
     port: 6379
+    # Redis server connection password (empty by default)
+    #  password:
+    # connection timeout
     timeout: 5000
-#    password: 123456
+    lettuce:
+      pool:
+        # Maximum connections in the pool
+        max-active: 200
+        # Maximum blocking wait time for the pool
+        # (use negative value to indicate no limit)
+        max-wait: -1ms
+        # Maximum idle connections in the pool
+        max-idle: 10
+        # Minimum idle connections in the pool
+        min-idle: 0
+
+
   # Elasticsearch Config
   elasticsearch:
     uris: http://localhost:9200

@@ -47,11 +47,28 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- Sa-Token for SSO -->
+        <!-- Sa-Token authentication -->
         <dependency>
             <groupId>cn.dev33</groupId>
             <artifactId>sa-token-spring-boot-starter</artifactId>
             <version>1.39.0</version>
+        </dependency>
+        <!-- Sa-Token integrating Redis (jdk default serialising) -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-redis</artifactId>
+            <version>1.39.0</version>
+        </dependency>
+        <!-- Sa-Token integrating Redis (jackson serialising) -->
+        <!-- dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-redis-jackson</artifactId>
+            <version>1.39.0</version>
+        </dependency-->
+        <!-- Redis connection pool -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter -->
