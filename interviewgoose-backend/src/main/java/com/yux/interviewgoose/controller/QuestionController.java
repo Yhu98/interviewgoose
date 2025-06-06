@@ -2,6 +2,7 @@ package com.yux.interviewgoose.controller;
 
 
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
@@ -10,7 +11,6 @@ import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.yux.interviewgoose.annotation.AuthCheck;
 import com.yux.interviewgoose.common.BaseResponse;
 import com.yux.interviewgoose.common.DeleteRequest;
 import com.yux.interviewgoose.common.ErrorCode;
@@ -18,27 +18,26 @@ import com.yux.interviewgoose.common.ResultUtils;
 import com.yux.interviewgoose.constant.UserConstant;
 import com.yux.interviewgoose.exception.BusinessException;
 import com.yux.interviewgoose.exception.ThrowUtils;
+import com.yux.interviewgoose.manager.CounterManager;
 import com.yux.interviewgoose.model.dto.question.QuestionAddRequest;
 import com.yux.interviewgoose.model.dto.question.QuestionEditRequest;
 import com.yux.interviewgoose.model.dto.question.QuestionQueryRequest;
 import com.yux.interviewgoose.model.dto.question.QuestionUpdateRequest;
-import com.yux.interviewgoose.model.dto.questionbank.QuestionBankQueryRequest;
 import com.yux.interviewgoose.model.dto.questionbankquestion.QuestionBankQuestionBatchAddRequest;
 import com.yux.interviewgoose.model.entity.Question;
 import com.yux.interviewgoose.model.entity.User;
-import com.yux.interviewgoose.model.vo.QuestionBankVO;
 import com.yux.interviewgoose.model.vo.QuestionVO;
 import com.yux.interviewgoose.service.QuestionBankQuestionService;
 import com.yux.interviewgoose.service.QuestionService;
 import com.yux.interviewgoose.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.tools.Trace;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Question interface
@@ -58,6 +57,41 @@ public class QuestionController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private CounterManager counterManager;
+
+    /**
+     * detect crawler
+     * @param loginUserId
+     */
+    private void crawlerDetect(long loginUserId) {
+        // count to warn
+        final int WARN_COUNT = 10;
+        // count to ban
+        final int BAN_COUNT = 20;
+        // concatenate user id to key
+        String key = String.format("user:access:%s", loginUserId);
+        // count of visits in 1 min (180s expiry)
+        long count = counterManager.incrAndGetCounter(key, 1, TimeUnit.MINUTES, 180);
+        // whether to ban
+        if (count > BAN_COUNT) {
+            // kickout user
+            StpUtil.kickout(loginUserId);
+            // ban user
+            User updateUser = new User();
+            updateUser.setId(loginUserId);
+            updateUser.setUserRole("ban");
+            userService.updateById(updateUser);
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "You've been banned due to over frequent visits!");
+        }
+        // whether to warn
+        if (count == WARN_COUNT) {
+            // TODO (optional): send email to admin for notification
+            throw new BusinessException(110, "Sorry! You are visiting too frequently!");
+        }
+    }
+
 
     // region CRUD
 
@@ -159,6 +193,9 @@ public class QuestionController {
     @GetMapping("/get/vo")
     public BaseResponse<QuestionVO> getQuestionVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+        // detect and handle crawler
+        User loginUser = userService.getLoginUser(request);
+        crawlerDetect(loginUser.getId());
         // query database
         Question question = questionService.getById(id);
         ThrowUtils.throwIf(question == null, ErrorCode.NOT_FOUND_ERROR);
